@@ -1,0 +1,4 @@
+useDynLib(devout, .registration=TRUE)
+export("ascii")
+export("descriptive")
+importFrom(Rcpp, evalCpp)

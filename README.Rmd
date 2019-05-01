@@ -1,0 +1,193 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+suppressPackageStartupMessages({
+  library(devout)
+  library(ggplot2)
+  library(dplyr)
+  library(grid)
+})
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+
+set.seed(1)
+mtcars <- mtcars %>% mutate(cyl = as.factor(cyl))
+
+```
+# devout - non-standard devices for graphical output from R
+
+<!-- badges: start -->
+![](https://img.shields.io/badge/cool-useless-green.svg)
+![](https://img.shields.io/badge/Status-alpha-orange.svg)
+![](https://img.shields.io/badge/Version-0.1.0-blue.svg)
+<!-- badges: end -->
+
+
+`devout` is a package for some of some non-standard devices for R.
+
+A graphics device (e.g. `png()`, `pdf()`) is an interface to which R passes
+plotting instructions. The graphics device then stores these in the appropriate
+format for the given filetype.
+
+However, there is no requirement that the output is saved to a file, nor is there
+any requirement that the output is saved as a graphic.
+
+
+## What's in the box
+
+* `ascii()` - a non-standard device which outputs an ascii representation of the plot 
+  to a file, or to the console or terminal
+* `descriptive()` - a non-standard output device that describes what the output looks like
+
+## Installation
+
+You can install from [GitHub](https://github.com/coolbutuseless/devout) with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("coolbutuseless/devout")
+```
+
+
+## `ascii()` device
+
+The `ascii()` device draws an approximation of the graphics using ASCII characters
+on the console (by default) or saved to a text file (if specified).
+
+### Basic scatterplot
+
+```{r}
+p <- ggplot(mtcars) + 
+  geom_point(aes(mpg, wt)) +
+  labs(
+    y     = "Car Weight",
+    title    = "Basic scatter plot",
+    subtitle = "Rendered with devout::ascii()"
+  )  + 
+  theme_bw()
+
+ascii(width = 100)
+p
+jnk <- dev.off()
+```
+
+### Basic scatterplot with geom smooth
+
+```{r}
+p <- ggplot(mtcars) + 
+  geom_point(aes(mpg, wt)) +
+  geom_smooth(aes(mpg, wt), se = FALSE, method = 'loess') +
+  labs(
+    y        = "Car Weight",
+    title    = "Basic scatter plot with a geom_smooth()",
+    subtitle = "Rendered with devout::ascii()"
+  )  + 
+  theme_bw()
+
+ascii(width = 100)
+p
+jnk <- dev.off()
+```
+
+
+### Boxplot with `coord_flip()`
+
+```{r}
+p <- ggplot(mtcars) + 
+  geom_boxplot(aes(cyl, wt)) +
+  labs(title = "Boxplot with flipped coorindates", 
+    subtitle = "Rendered with devout::ascii()") + 
+  coord_flip() + 
+  theme_bw() 
+
+ascii(width = 100, height = 30)
+grid.draw(p)
+jnk <- dev.off()
+```
+
+
+### Facetted Histogram with a `fill` aesthetic
+
+```{r eval = TRUE}
+p <- ggplot(mtcars) + 
+  theme_bw()  +
+  geom_histogram(aes(wt, fill = cyl), bins = 5, colour = 'black') +
+  labs(title = "Facetted Histogram with 'fill' Aesthetic", 
+    subtitle = "Rendered with devout::ascii()") + 
+  facet_wrap(~cyl, labeller = label_both) +
+  theme(panel.grid = element_blank())
+
+ascii(width = 100)
+grid.draw(p)
+jnk <- dev.off()
+```
+
+
+
+## `descriptive()` device
+
+The descriptive device gives a blow-by-blow account of what the graphics
+device is being asked to draw.
+
+This device is useful to use as a starting point for creating other graphics devices - 
+I used it as the basis for the `ascii()` device and added featues as I needed them.
+
+
+
+```{r}
+p <- ggplot(mtcars) + 
+  geom_point(aes(mpg, wt)) +
+  labs(title = "Rendered with devout::ascii() more text goes here") +
+  theme_void()
+
+descriptive()
+p
+jnk <- dev.off()
+```
+
+## Limitations
+
+* No filled polygons.
+* No anti-aliasing.
+* No UTF text support.
+* No plotmath support.
+* No sanity checking or safety checking of 'filename' string.
+* No way to have un-filled circles.
+* No stroke aesthetic for cicles.
+* No real support for legends.
+    * Legends get drawn, but a colourscale (for example) doesn't really map 
+      to an ascii representation so it looks rubbish.
+    * You should probably always add `theme(legend.position = 'none')` .
+* No support for carriage returns in text.
+
+
+## Other Non-Standard Device Ideas
+
+* ANSI graphics
+* Colour ASCII/ANSI output
+* audio + midi output
+* HPGL plotting output
+* [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine tooling instructions
+* Directly drive motors to power an etch-a-sketch
+* Crochet and knitting patterns
+* Capture each call and turn it back into R code as a sequence of `grid` calls
+* Save drawing instructions as a CSV file
+
+
+
+## References:
+
+* [svglite source code](https://github.com/r-lib/svglite)
+* The defunct `RGraphicsDevice` project
+    * http://www.omegahat.net/RGraphicsDevice/
+    * http://www.omegahat.net/RGraphicsDevice/overview.html
+
