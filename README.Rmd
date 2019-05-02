@@ -198,10 +198,9 @@ jnk <- dev.off()
 
 ```{r}
 ascii(width = 100) 
-pie(1:3)
+pie(c(cool = 4, use = 1, less = 8))
 jnk <- dev.off()
 ```
-
 
 
 ## `descriptive()` device
