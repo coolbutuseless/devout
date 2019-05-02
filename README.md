@@ -7,7 +7,7 @@
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.0-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.1-blue.svg)
 <!-- badges: end -->
 
 `devout` is a package for some of some non-standard devices for R.
@@ -26,6 +26,13 @@ is there any requirement that the output is saved as a graphic.
   - `descriptive()` - a non-standard output device that describes what
     the output looks like
 
+## News:
+
+  - v0.1.0 - initial release
+  - v0.1.1
+      - Added support for path objects, so more map plots now work.
+      - More example plots - `sf`, `pie`, `igraph`
+
 ## Installation
 
 You can install from [GitHub](https://github.com/coolbutuseless/devout)
@@ -42,7 +49,7 @@ The `ascii()` device draws an approximation of the graphics using ASCII
 characters on the console (by default) or saved to a text file (if
 specified).
 
-### Basic scatterplot
+### `ggplot2`: Basic scatterplot
 
 ``` r
 p <- ggplot(mtcars) + 
@@ -60,128 +67,34 @@ jnk <- dev.off()
 ```
 
 ``` 
-   Basic scatter plot                                                                               
-   Rendered with devout::ascii()                                                                    
-   +-----------------------------------------------------------------------------------------------+
-   |  .#       .       #.         .        .        .         .        .        .         .        |
-   |  .        .        .         .        .        .         .        .        .         .        |
- 5 |...............................................................................................|
-   |  .        .        .         .        .        .         .        .        .         .        |
-   |...............................................................................................|
-C  |  .        .        .         .        .        .         .        .        .         .        |
-a  |..........................#....................................................................|
-r4 |  .        .  #     .         .     #  .        .         .        .        .         .        |
-   |  .        .        .#       #.        .        .         .        .        .         .        |
-W  |..................#.###........##.#.#..........................................................|
-e  |  .        .        .  #      .        .    #   .      #  .        .        .         .        |
-i  |.................................................#.............................................|
-g3 |  .        .        .         .       #.   ##   .         .        .        .         .        |
-h  |  .        .        .         .        .   #    .         .        .        .         .        |
-t  |.............................................#.................................................|
-   |  .        .        .         .        .        .#        .  #     .        .        #.        |
- 2 |..................................................................#............................|
-   |  .        .        .         .        .        .         .        .        .         .    #   |
-   |..............................................................................#................|
-   +-----------------------------------------------------------------------------------------------+
-    10                 15                 20                25                 30                 3 
-                                                 mpg                                                
+    Basic scatter plot                                                                              
+    Rendered with devout::ascii()                                                                   
+    +----------------------------------------------------------------------------------------------+
+    |  .#       .       #.        .         .        .        .        .         .        .        |
+    |  .        .        .        .         .        .        .        .         .        .        |
+ C5 |..............................................................................................|
+ a  |  .        .        .        .         .        .        .        .         .        .        |
+ r  |..............................................................................................|
+    |  .        .        .        .         .        .        .        .         .        .        |
+ W  |.........................#....................................................................|
+ e4 |  .        .  #     .        .      #  .        .        .        .         .        .        |
+ i  |  .        .        .#       #         .        .        .        .         .        .        |
+ g  |.................#..###.......#.#.#.#.........................................................|
+ h  |  .        .        .  #     .         .    #   .      # .        .         .        .        |
+ t  |.................................................#............................................|
+  3 |  .        .        .        .       # .  # #   .        .        .         .        .        |
+    |  .        .        .        .         .  #     .        .        .         .        .        |
+    |............................................#.................................................|
+    |  .        .        .        .         .        .#       .   #    .         .        #        |
+  2 |..................................................................#...........................|
+    |  .        .        .        .         .        .        .        .         .        .    #   |
+    |  .        .        .        .         .        .        .        .         .#       .        |
+    +----------------------------------------------------------------------------------------------+
+     10                 15                20                 25                30                 3 
+                                                  mpg                                               
 ```
 
-### Basic scatterplot with geom smooth
-
-``` r
-p <- ggplot(mtcars) + 
-  geom_point(aes(mpg, wt)) +
-  geom_smooth(aes(mpg, wt), se = FALSE, method = 'loess') +
-  labs(
-    y        = "Car Weight",
-    title    = "Basic scatter plot with a geom_smooth()",
-    subtitle = "Rendered with devout::ascii()"
-  )  + 
-  theme_bw()
-
-ascii(width = 100)
-p
-jnk <- dev.off()
-```
-
-``` 
-   Basic scatter plot with a geom_smooth()                                                          
-   Rendered with devout::ascii()                                                                    
-   +-----------------------------------------------------------------------------------------------+
-   |  .o       .       #.         .        .        .         .        .        .         .        |
-   |  . o      .        .         .        .        .         .        .        .         .        |
- 5 |.....ooo.......................................................................................|
-   |  .     oo .        .         .        .        .         .        .        .         .        |
-   |..........ooo..................................................................................|
-C  |  .        . oo     .         .        .        .         .        .        .         .        |
-a  |...............oooo.......#....................................................................|
-r4 |  .        .  #    oooo       .     #  .        .         .        .        .         .        |
-   |  .        .        .# ooooooo.        .        .         .        .        .         .        |
-W  |..................#.###.......ooooo.#..........................................................|
-e  |  .        .        .  #      .    oooo.    #   .      #  .        .        .         .        |
-i  |.......................................oooo......#.............................................|
-g3 |  .        .        .         .       #.   oooooo         .        .        .         .        |
-h  |  .        .        .         .        .   #    .ooooo    .        .        .         .        |
-t  |.............................................#........oooooo...................................|
-   |  .        .        .         .        .        .#        . ooooooo.        .        #.        |
- 2 |..................................................................#oooooooo....................|
-   |  .        .        .         .        .        .         .        .       oooooooooooooooo#   |
-   |..............................................................................#................|
-   +-----------------------------------------------------------------------------------------------+
-    10                 15                 20                25                 30                 3 
-                                                 mpg                                                
-```
-
-### Boxplot with `coord_flip()`
-
-``` r
-p <- ggplot(mtcars) + 
-  geom_boxplot(aes(cyl, wt)) +
-  labs(title = "Boxplot with flipped coorindates", 
-    subtitle = "Rendered with devout::ascii()") + 
-  coord_flip() + 
-  theme_bw() 
-
-ascii(width = 100, height = 30)
-grid.draw(p)
-jnk <- dev.off()
-```
-
-``` 
-   Boxplot with flipped coorindates                                                                 
-   Rendered with devout::ascii()                                                                    
-   +-----------------------------------------------------------------------------------------------+
-   |   .          .          .           .          .          .          .          .           . |
-   |   .          .          .           .          OOOOOOOOOOOO          .          .           . |
-   |   .          .          .           .          O    O     O          .          .           . |
-   |   .          .          .           .          O    O     O          .          .           . |
- 8 |........................................OOOOOOOOO....O.....OO..........................O.O.O...|
-   |   .          .          .           .          O    O     O          .          .           . |
-   |   .          .          .           .          O    O     O          .          .           . |
-   |   .          .          .           .          OOOOOOOOOOO.          .          .           . |
-   |   .          .          .           .          .          .          .          .           . |
-   |   .          .          .       OOOOOOOOOOOOOO .          .          .          .           . |
-   |   .          .          .       O   .   O    O .          .          .          .           . |
-c  |   .          .          .       O   .   O    O .          .          .          .           . |
-y6 |............................OOOOOO.......O....O................................................|
-l  |   .          .          .       O   .   O    O .          .          .          .           . |
-   |   .          .          .       O   .   O    O .          .          .          .           . |
-   |   .          .          .       OOOOOOOOOOOOO  .          .          .          .           . |
-   |   .          .          .           .          .          .          .          .           . |
-   |   .       OOOOOOOOOOOOOOOOOO        .          .          .          .          .           . |
-   |   .       O  .    O     .  O        .          .          .          .          .           . |
-   |   .       O  .    O     .  O        .          .          .          .          .           . |
- 4 |...OOOOOOOOO.......O........OOOOOOOOOOOOO......................................................|
-   |   .       O  .    O     .  O        .          .          .          .          .           . |
-   |   .       O  .    O     .  O        .          .          .          .          .           . |
-   |   .       OOOOOOOOOOOOOOOOO         .          .          .          .          .           . |
-   +-----------------------------------------------------------------------------------------------+
-                 2                      3                     4                     5               
-                                                  wt                                                
-```
-
-### Facetted Histogram with a `fill` aesthetic
+### `ggplot2` Facetted Histogram with a `fill` aesthetic
 
 ``` r
 p <- ggplot(mtcars) + 
@@ -193,36 +106,202 @@ p <- ggplot(mtcars) +
   theme(panel.grid = element_blank())
 
 ascii(width = 100)
-grid.draw(p)
+p
 jnk <- dev.off()
 ```
 
 ``` 
-      Facetted Histogram with 'fill' Aesthetic                                                      
-      Rendered with devout::ascii()                                                                 
-      +----------------------------++----------------------------+-----------------------------+    
-      +--------- cyl: 4 -----------++--------- cyl: 6 -----------+---------- cyl: 8 -----------+    
- 10.0 |                            ||                            |            +----+           |    
-      |                            ||                            |            |----|           |    
-      |                            ||                            |            |----|           |    
-      |                            ||                            |            |----|           |    
-  7.5 |                            ||                            |            |----|           |    
-      |+----+                      ||                            |            |----|           |    
-      ||----|                      ||                            |            |----|                
-c     ||----|                      ||                            |            |----|           cyl  
-o     ||----|                      ||                            |            |----|           4    
-u 5.0 ||----|                      ||                            |            |----|           6    
-n     ||----+-----+                ||     +-----+                |            |----|           8    
-t     ||----|-----|                ||     |ooooo|                |            |----|           +    
-      ||----|-----|                ||     |ooooo+----+           |            |----|           |    
-  2.5 ||----|-----|                ||     |ooooo|oooo|           |            |----|           |    
-      ||----|-----|                ||     |ooooo|oooo|           |            |----+----+      |    
-      ||----|-----|                ||     |ooooo|oooo|           |            |----|----|      |    
-      ||----|-----|                ||     |ooooo|oooo|           |      +-----|----|----+-----+|    
-      |+----+-----+----+-----+----+||+----+-----+----+-----+----+| +----+-----+----+----+-----+|    
-  0.0 +----------------------------++----------------------------+-----------------------------+    
-         2     3    4     5    6       2    3     4    5     6       2    3     4    5     6        
+       Facetted Histogram with 'fill' Aesthetic                                                     
+       Rendered with devout::ascii()                                                                
+       +--------- cyl: 4 -----------+--------- cyl: 6 ------------+--------- cyl: 8 -----------+    
+       +----------------------------+-----------------------------+----------------------------+    
+  10.0 |                            |                             |           +----+           |    
+       |                            |                             |           |----|           |    
+       |                            |                             |           |----|           |    
+       |                            |                             |           |----|           |    
+   7.5 |                            |                             |           |----|           |    
+ c     |+----+                      |                             |           |----|           |    
+ o     ||----|                      |                             |           |----|                
+ u     ||----|                      |                             |           |----|           cyl  
+ n     ||----|                      |                             |           |----|           4    
+ t 5.0 ||----|                      |                             |           |----|           6    
+       ||----+-----+                |      +----+                 |           |----|           8    
+       ||----|-----|                |      |oooo|                 |           |----|           +    
+       ||----|-----|                |      |oooo+-----+           |           |----|           |    
+   2.5 ||----|-----|                |      |oooo|ooooo|           |           |----|           |    
+       ||----|-----|                |      |oooo|ooooo|           |           |----+----+      |    
+       ||----|-----|                |      |oooo|ooooo|           |           |----|----|      |    
+       ||----|-----|                |      |oooo|ooooo|           |     +-----|----|----+-----+|    
+       ||----|-----|                |      |oooo|ooooo|           |     |-----|----|----|-----||    
+   0.0 +----------------------------+-----------------------------+----------------------------+    
+          2    3     4    5     6      2     3    4     5    6       2    3     4    5     6        
                                                  wt                                                 
+```
+
+### `geom_sf` map of the Gulf of Mexico
+
+  - Example taken from the [r-spatial
+    website](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
+  - This would probably look better with filled polygons, but they are
+    not supported yet.
+
+<!-- end list -->
+
+``` r
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+world_points <- st_centroid(world)
+world_points <- cbind(world, st_coordinates(st_centroid(world$geometry)))
+
+ascii(width = 200)
+ggplot(data = world) +
+  geom_sf() +
+  geom_text(data= world_points,aes(x=X, y=Y, label=name),
+            color = "darkblue", fontface = "bold", check_overlap = FALSE) +
+  annotate(geom = "text", x = -90, y = 26, label = "Gulf of Mexico", fontface = "italic", color = "grey22", size = 6) +
+  coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE) + 
+  theme_bw()
+jnk <- dev.off()
+```
+
+<img src = "man/figures/gulfofmexico.png">
+
+### `tmap` world map
+
+  - Thanks to [Barry Rowlingson](https://twitter.com/geospacedman) for
+    pointing out that basic mapping didn’t work in v0.1.0 and posting an
+    example
+
+<!-- end list -->
+
+``` r
+library(tmap)
+data(World)
+
+ascii(verbosity = 0, width = 200)
+tm_shape(World, projection = 'longlat') + 
+  tm_polygons() +
+  tm_layout("Long lat coordinates (WGS84)", inner.margins=c(0,0,.1,0))
+dev.off()
+```
+
+<img src = "man/figures/tmap.png">
+
+### `treemap`
+
+``` r
+library(treemap)
+
+ascii(width = 100)
+mtcars %>% 
+  tibble::rownames_to_column() %>% 
+  head(10) %>% 
+  treemap(index = 'rowname', vSize = 'disp', palette = c('#ffffff'))
+jnk <- dev.off()
+```
+
+    +---------------------------------+----------------------+---------------------+-------------------+
+    |                                 |                      |                     |                   |
+    |                                 |                      |                     |                   |
+    |                                 |                      |                     |                   |
+    |                                 |                      |                     |                   |
+    |                                 |                      |     Merc 280        |  Mazda RX4 Wag    |
+    |          Duster 360             |                      |                     |                   |
+    |                                 |   Hornet 4 Drive     |                     |                   |
+    |                                 |                      |                     |                   |
+    |                                 |                      +---------------------++------------------+
+    |                                 |                      |                      |                  |
+    |                                 |                      |                      |                  |
+    +---------------------------------+                      |                      |                  |
+    |                                 +----------------------+      Mazda RX4       |                  |
+    |                                 |                      |                      |    Merc 230      |
+    |                                 |                      |                      |                  |
+    |                                 |                      |                      |                  |
+    |                                 |                      |----------------------+                  |
+    |                                 |                      |                      |------------------+
+    |       Hornet Sportabout         |       Valiant        |                      |                  |
+    |                                 |                      |                      |                  |
+    |                                 |                      |      Merc 240D       |   Datsun 710     |
+    |                                 |                      |                      |                  |
+    |                                 |                      |                      |                  |
+    +---------------------------------+----------------------+----------------------+------------------+
+
+### `igraph` network plot
+
+``` r
+library(igraph)
+
+ascii(width = 100)
+igraph::random.graph.game(6, 0.4) %>% 
+  plot(vertex.shape = 'none')
+jnk <- dev.off()
+```
+
+``` 
+                                                                                                    
+                           1                                                                        
+                             ++                                                                     
+                               ++                                                                   
+                                 ++                                                                 
+                                   ++                                 3                             
+                                     ++                              +                              
+                                       +                           ++                               
+                                        5  +++                   ++                                 
+                                          +   ++++            +++                                   
+                                           +      +++++     ++                                      
+                                           +            6 ++                                        
+                                            +            +                                          
+                                             +         + +                                          
+                                             +       ++  +                                          
+                                              +     +    +                                          
+                                               +  ++     +                                          
+                                               2 +       +                                          
+                                                 +        +                                         
+                                                  ++      +                                         
+                                                    ++    +                                         
+                                                      ++  +                                         
+                                                        +                                           
+                                                         4                                          
+                                                                                                    
+```
+
+### `pie` plot in base R
+
+``` r
+ascii(width = 100) 
+pie(1:3)
+jnk <- dev.off()
+```
+
+``` 
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                     2     ##############                                           
+                                       ####              ###                                        
+                                     ##                   # ###                                     
+                                   ##                    #     #                                    
+                                  #                     #       ## 1                                
+                                 #                     #           #                                
+                                #                    ##            #                                
+                               #                    #               #                               
+                               #                   #                #                               
+                               ######################################                               
+                               #                                    #                               
+                                #                                  #                                
+                                #                                  #                                
+                                 #                                                                  
+                                  #                             ##                                  
+                                   ##                          #                                    
+                                     ##                     ###                                     
+                                       ####              ###                                        
+                                           ##############                                           
+                                                3                                                   
+                                                                                                    
+                                                                                                    
 ```
 
 ## `descriptive()` device
@@ -291,6 +370,8 @@ jnk <- dev.off()
   - No anti-aliasing.
   - No UTF text support.
   - No plotmath support.
+  - No angled text other than 0 or 90 degrees.
+  - No raster support.
   - No sanity checking or safety checking of ‘filename’ string.
   - No way to have un-filled circles.
   - No stroke aesthetic for cicles.
@@ -318,6 +399,8 @@ jnk <- dev.off()
 ## References:
 
   - [svglite source code](https://github.com/r-lib/svglite)
+  - [thomasp85’s](https://twitter.com/thomasp85) [devoid
+    package](https://github.com/r-lib/devoid)
   - The defunct `RGraphicsDevice` project
       - <http://www.omegahat.net/RGraphicsDevice/>
       - <http://www.omegahat.net/RGraphicsDevice/overview.html>

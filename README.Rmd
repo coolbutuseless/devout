@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
 
 
 set.seed(1)
-mtcars <- mtcars %>% mutate(cyl = as.factor(cyl))
+mtcars <- mtcars %>% 
+  mutate(cyl = as.factor(cyl))
 
 ```
 # devout - non-standard devices for graphical output from R
@@ -28,7 +29,7 @@ mtcars <- mtcars %>% mutate(cyl = as.factor(cyl))
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.0-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.1-blue.svg)
 <!-- badges: end -->
 
 
@@ -48,6 +49,14 @@ any requirement that the output is saved as a graphic.
   to a file, or to the console or terminal
 * `descriptive()` - a non-standard output device that describes what the output looks like
 
+
+## News:
+
+* v0.1.0 - initial release
+* v0.1.1 
+    - Added support for path objects, so more map plots now work.
+    - More example plots - `sf`, `pie`, `igraph`
+
 ## Installation
 
 You can install from [GitHub](https://github.com/coolbutuseless/devout) with:
@@ -63,7 +72,7 @@ remotes::install_github("coolbutuseless/devout")
 The `ascii()` device draws an approximation of the graphics using ASCII characters
 on the console (by default) or saved to a text file (if specified).
 
-### Basic scatterplot
+### `ggplot2`: Basic scatterplot
 
 ```{r}
 p <- ggplot(mtcars) + 
@@ -80,42 +89,9 @@ p
 jnk <- dev.off()
 ```
 
-### Basic scatterplot with geom smooth
-
-```{r}
-p <- ggplot(mtcars) + 
-  geom_point(aes(mpg, wt)) +
-  geom_smooth(aes(mpg, wt), se = FALSE, method = 'loess') +
-  labs(
-    y        = "Car Weight",
-    title    = "Basic scatter plot with a geom_smooth()",
-    subtitle = "Rendered with devout::ascii()"
-  )  + 
-  theme_bw()
-
-ascii(width = 100)
-p
-jnk <- dev.off()
-```
 
 
-### Boxplot with `coord_flip()`
-
-```{r}
-p <- ggplot(mtcars) + 
-  geom_boxplot(aes(cyl, wt)) +
-  labs(title = "Boxplot with flipped coorindates", 
-    subtitle = "Rendered with devout::ascii()") + 
-  coord_flip() + 
-  theme_bw() 
-
-ascii(width = 100, height = 30)
-grid.draw(p)
-jnk <- dev.off()
-```
-
-
-### Facetted Histogram with a `fill` aesthetic
+### `ggplot2` Facetted Histogram with a `fill` aesthetic
 
 ```{r eval = TRUE}
 p <- ggplot(mtcars) + 
@@ -127,7 +103,102 @@ p <- ggplot(mtcars) +
   theme(panel.grid = element_blank())
 
 ascii(width = 100)
-grid.draw(p)
+p
+jnk <- dev.off()
+```
+
+
+### `geom_sf` map of the Gulf of Mexico
+
+* Example taken from the [r-spatial website](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
+* This would probably look better with filled polygons, but they are not supported yet.
+
+```{r warning = FALSE, eval = FALSE}
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+world_points <- st_centroid(world)
+world_points <- cbind(world, st_coordinates(st_centroid(world$geometry)))
+
+ascii(width = 200)
+ggplot(data = world) +
+  geom_sf() +
+  geom_text(data= world_points,aes(x=X, y=Y, label=name),
+            color = "darkblue", fontface = "bold", check_overlap = FALSE) +
+  annotate(geom = "text", x = -90, y = 26, label = "Gulf of Mexico", fontface = "italic", color = "grey22", size = 6) +
+  coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE) + 
+  theme_bw()
+jnk <- dev.off()
+```
+
+<img src = "man/figures/gulfofmexico.png">
+
+
+
+### `tmap` world map
+
+* Thanks to [Barry Rowlingson](https://twitter.com/geospacedman) for pointing out
+that basic mapping didn't work in v0.1.0 and posting an example
+
+```{r eval = FALSE}
+library(tmap)
+data(World)
+
+ascii(verbosity = 0, width = 200)
+tm_shape(World, projection = 'longlat') + 
+  tm_polygons() +
+  tm_layout("Long lat coordinates (WGS84)", inner.margins=c(0,0,.1,0))
+dev.off()
+```
+
+<img src = "man/figures/tmap.png">
+
+
+### `treemap`
+
+```{r echo = FALSE}
+data(mtcars)
+```
+
+
+```{r}
+library(treemap)
+
+ascii(width = 100)
+mtcars %>% 
+  tibble::rownames_to_column() %>% 
+  head(10) %>% 
+  treemap(index = 'rowname', vSize = 'disp', palette = c('#ffffff'))
+jnk <- dev.off()
+```
+
+
+### `igraph` network plot
+
+
+```{r echo = FALSE}
+set.seed(3)
+```
+
+
+```{r warning=FALSE, message=FALSE}
+library(igraph)
+
+ascii(width = 100)
+igraph::random.graph.game(6, 0.4) %>% 
+  plot(vertex.shape = 'none')
+jnk <- dev.off()
+```
+
+
+
+### `pie` plot in base R
+
+```{r}
+ascii(width = 100) 
+pie(1:3)
 jnk <- dev.off()
 ```
 
@@ -160,6 +231,8 @@ jnk <- dev.off()
 * No anti-aliasing.
 * No UTF text support.
 * No plotmath support.
+* No angled text other than 0 or 90 degrees.
+* No raster support.
 * No sanity checking or safety checking of 'filename' string.
 * No way to have un-filled circles.
 * No stroke aesthetic for cicles.
@@ -187,6 +260,7 @@ jnk <- dev.off()
 ## References:
 
 * [svglite source code](https://github.com/r-lib/svglite)
+* [thomasp85's](https://twitter.com/thomasp85) [devoid package](https://github.com/r-lib/devoid)
 * The defunct `RGraphicsDevice` project
     * http://www.omegahat.net/RGraphicsDevice/
     * http://www.omegahat.net/RGraphicsDevice/overview.html

@@ -266,20 +266,52 @@ void ascii_polyline(int n, double *x, double *y, const pGEcontext gc, pDevDesc d
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Draw a path
+// Draw a path.
 //
-// @param x,y vectors of coordiantes
-// @param npoly not sure
-// @param nper not sure
-// @param winding winding order. for hollows within polygongs?
+// @param x,y vectors of coordiates - enough to cover all the polygons each
+//            with its respective nper
+// @param npoly Number of polygons = number of elements in "nper"
+// @param nper Number of elements in each particular polygon
+// @param winding winding order. whehter to fill or not fill.  currently unused in ascii()
+//        According to svglite::svg_path():
+//             0 = false = evenodd
+//             1 = true  = nonzero
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ascii_path(double *x, double *y, int npoly, int *nper,
               Rboolean winding, const pGEcontext gc, pDevDesc dd) {
 
   ascii_struct *context = (ascii_struct *)dd->deviceSpecific;
   if (context->verbosity >= 1) {
-    Rcpp::Rcout << "- path" << std::endl;
+    Rcpp::Rcout << "- path      winding: " << winding << "  npoly: " << npoly << "  nper: " << *nper;
     dump_gc(gc, true);
+
+    if (context->verbosity >= 3) {
+      unsigned int ind = 0;
+      for (unsigned int i = 0; i < npoly; i++) {
+        // Move to the first point of the sub-path
+        Rcpp::Rcout << "poly: " << i << "     " << format_coord(x[ind], y[ind]) << std::endl;
+        ind++;
+        // Draw the sub-path
+        for (unsigned int j = 1; j < (unsigned int)(nper[i]); j++) {
+          Rcpp::Rcout << "            " << format_coord(x[ind], y[ind]) << std::endl;
+          ind++;
+        }
+      }
+    }
+  }
+
+  int col = col2ascii(gc->col);
+
+  unsigned int ind = 0;
+  for (unsigned int i = 0; i < npoly; i++) {
+    // Move to the first point of the sub-path
+    set_pixel(x[ind]/72, y[ind]/72, col, context);
+    ind++;
+    // Draw the sub-path
+    for (unsigned int j = 1; j < (unsigned int)(nper[i]); j++) {
+      set_pixel(x[ind]/72, y[ind]/72, col, context);
+      ind++;
+    }
   }
 }
 
@@ -427,7 +459,7 @@ pDevDesc ascii_device_new(std::string filename, Rcpp::IntegerMatrix &mat, int ve
 
   // inches per pt
   dd->ipr[0] = 1.0 / 72.0;
-  dd->ipr[1] = 1.0 / 72.0;
+  dd->ipr[1] = 1.0 / 36.0;
 
   // Capabilities
   dd->canClip           = TRUE;
