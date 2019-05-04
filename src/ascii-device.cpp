@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <R_ext/GraphicsEngine.h>
 #include <fstream>
+#include <stdio.h>
 
 #include "ascii-device.h"
 #include "utils.h"
@@ -12,7 +13,11 @@
 // Called when 'dev.off()' is called
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ascii_close(pDevDesc dd) {
+
   ascii_struct *context = (ascii_struct *)dd->deviceSpecific;
+
+  char multifilename[255];
+  int cx;
 
   if (context->verbosity >= 1) {
     Rcpp::Rcout << "- close" << std::endl;
@@ -31,7 +36,19 @@ void ascii_close(pDevDesc dd) {
     }
   } else {
     std::ofstream outfile;
-    outfile.open(context->filename, std::ios::out);
+
+    // Is this a format string for sprintf?
+    size_t found = (context->filename).find("%");
+
+    // If we found a % sign, then use the filename as a format string with the
+    // page number as the argument
+    if (found != std::string::npos) {
+      cx = snprintf(multifilename, 255, (context->filename).c_str(), context->page);
+      outfile.open(multifilename, std::ios::out);
+    } else {
+      outfile.open(context->filename, std::ios::out);
+    }
+
 
     for (unsigned int i = 0; i < nrow; i++) {
       for (unsigned int j = 0; j < ncol; j++) {
@@ -41,6 +58,33 @@ void ascii_close(pDevDesc dd) {
     }
 
     outfile.close();
+  }
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Start a new page
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ascii_new_page(const pGEcontext gc, pDevDesc dd) {
+  ascii_struct *context = (ascii_struct *)dd->deviceSpecific;
+
+  // Save current page
+  if (context->page > 0) {
+    ascii_close(dd);
+  }
+
+  // Incremenet page number
+  context->page = context->page + 1;
+
+  // zero out the canvas
+  for (unsigned int row = 0; row < context->nrow; row++) {
+    for (unsigned int col = 0; col < context->ncol; col++) {
+      context->data[row * context->ncol + col] = ' ';
+    }
+  }
+
+  if (context->verbosity >= 1) {
+    Rcpp::Rcout << "- new page: " << context->page << std::endl;
   }
 }
 
@@ -87,17 +131,6 @@ void ascii_size(double *left, double *right, double *bottom, double *top,
   *right  = dd->right;
   *bottom = dd->bottom;
   *top    = dd->top;
-}
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Start a new page
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ascii_new_page(const pGEcontext gc, pDevDesc dd) {
-  ascii_struct *context = (ascii_struct *)dd->deviceSpecific;
-  if (context->verbosity >= 1) {
-    Rcpp::Rcout << "- new page" << std::endl;
-  }
 }
 
 
@@ -238,7 +271,6 @@ void ascii_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc dd
 
   // Close the polygon
   draw_line(x[n-1]/72, y[n-1]/72, x[0]/72, y[0]/72, col2ascii(gc->col), context);
-
 }
 
 
@@ -483,6 +515,7 @@ pDevDesc ascii_device_new(std::string filename, Rcpp::IntegerMatrix &mat, int ve
   context->xupper           = width;
   context->ylower           = 0;
   context->yupper           = height;
+  context->page             = 0;
 
   dd->deviceSpecific = context;
 
@@ -515,7 +548,10 @@ void make_ascii_device(std::string filename, Rcpp::IntegerMatrix mat, int verbos
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //' Create an ascii graphics device
 //'
-//' @param filename if given, write ascii to this file, otherwise write to console
+//' @param filename if given, write ascii to this file, otherwise write to console.
+//'        If file is a format string e.g. "output%03i.txt", then this will be used
+//'        to create a unique filename if multiple pages are output within the same
+//'        \code{ascii()} call.
 //' @param width,height dimensions of text output (in characters)
 //' @param verbosity level. default: 0
 //'

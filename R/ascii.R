@@ -4,7 +4,10 @@
 #'
 #' Graphics primitives will be rendered using ascii characters.
 #'
-#' @param filename if given, write ascii to this file, otherwise write to console
+#' @param filename If given, write ascii to this file, otherwise write to console.
+#'        If file is a format string e.g. "output%03i.txt", then this will be used
+#'        to create a unique filename if multiple pages are output within the same
+#'        \code{ascii()} call.
 #' @param width,height dimensions of text output (in characters). If NULL then
 #'        auto-detect console width and set approximate aspect ratio at 1/2
 #' @param font_aspect Character spacing horizontally and vertically are almost

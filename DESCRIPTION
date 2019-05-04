@@ -1,8 +1,8 @@
 Package: devout
 Type: Package
 Title: Non-Standard Graphics Devices
-Version: 0.1.1
-Date: 2019-05-02
+Version: 0.1.2
+Date: 2019-05-04
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: A collection of non-standard graphics devices. Currently includes ascii output

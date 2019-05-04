@@ -26,6 +26,10 @@ void set_pixel(unsigned int x, unsigned int y, int colour, ascii_struct *context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void draw_line(float x1,  float y1,  float x2,  float y2,  int colour, ascii_struct *context) {
 
+  // Ensure end points get plotted
+  set_pixel(x1, y1, colour, context);
+  set_pixel(x2, y2, colour, context);
+
   const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
 
   if(steep) {
@@ -47,7 +51,7 @@ void draw_line(float x1,  float y1,  float x2,  float y2,  int colour, ascii_str
 
   const int maxX = (int)x2;
 
-  for(unsigned int x=(unsigned int)x1; x<maxX; x++) {
+  for(unsigned int x=(unsigned int)x1; x < maxX; x++) {
     if(steep) {
       set_pixel(y,x, colour, context);
     } else {
@@ -60,6 +64,7 @@ void draw_line(float x1,  float y1,  float x2,  float y2,  int colour, ascii_str
         error += dx;
     }
   }
+
 }
 
 

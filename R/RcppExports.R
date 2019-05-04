@@ -3,7 +3,10 @@
 
 #' Create an ascii graphics device
 #'
-#' @param filename if given, write ascii to this file, otherwise write to console
+#' @param filename if given, write ascii to this file, otherwise write to console.
+#'        If file is a format string e.g. "output%03i.txt", then this will be used
+#'        to create a unique filename if multiple pages are output within the same
+#'        \code{ascii()} call.
 #' @param width,height dimensions of text output (in characters)
 #' @param verbosity level. default: 0
 #'

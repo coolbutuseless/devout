@@ -7,7 +7,6 @@
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.1-blue.svg)
 <!-- badges: end -->
 
 `devout` is a package for some of some non-standard devices for R.
@@ -32,6 +31,7 @@ is there any requirement that the output is saved as a graphic.
   - v0.1.1
       - Added support for path objects, so more map plots now work.
       - More example plots - `sf`, `pie`, `igraph`
+  - v0.1.2 - Added support for multiple page output
 
 ## Installation
 
@@ -63,7 +63,7 @@ p <- ggplot(mtcars) +
 
 ascii(width = 100)
 p
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
 ``` 
@@ -72,24 +72,24 @@ jnk <- dev.off()
     +----------------------------------------------------------------------------------------------+
     |  .#       .       #.        .         .        .        .        .         .        .        |
     |  .        .        .        .         .        .        .        .         .        .        |
- C5 |..............................................................................................|
+ C5 O..............................................................................................|
  a  |  .        .        .        .         .        .        .        .         .        .        |
  r  |..............................................................................................|
     |  .        .        .        .         .        .        .        .         .        .        |
- W  |.........................#....................................................................|
+ W  O.........................#....................................................................|
  e4 |  .        .  #     .        .      #  .        .        .        .         .        .        |
  i  |  .        .        .#       #         .        .        .        .         .        .        |
  g  |.................#..###.......#.#.#.#.........................................................|
  h  |  .        .        .  #     .         .    #   .      # .        .         .        .        |
- t  |.................................................#............................................|
+ t  O.................................................#............................................|
   3 |  .        .        .        .       # .  # #   .        .        .         .        .        |
     |  .        .        .        .         .  #     .        .        .         .        .        |
     |............................................#.................................................|
     |  .        .        .        .         .        .#       .   #    .         .        #        |
-  2 |..................................................................#...........................|
+  2 O..................................................................#...........................|
     |  .        .        .        .         .        .        .        .         .        .    #   |
     |  .        .        .        .         .        .        .        .         .#       .        |
-    +----------------------------------------------------------------------------------------------+
+    +--O-----------------O------------------O-----------------O------------------O-----------------O
      10                 15                20                 25                30                 3 
                                                   mpg                                               
 ```
@@ -103,39 +103,42 @@ p <- ggplot(mtcars) +
   labs(title = "Facetted Histogram with 'fill' Aesthetic", 
     subtitle = "Rendered with devout::ascii()") + 
   facet_wrap(~cyl, labeller = label_both) +
-  theme(panel.grid = element_blank())
+  theme(
+    panel.grid = element_blank(),
+    legend.position = 'none'
+  )
 
 ascii(width = 100)
 p
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
 ``` 
        Facetted Histogram with 'fill' Aesthetic                                                     
        Rendered with devout::ascii()                                                                
-       +--------- cyl: 4 -----------+--------- cyl: 6 ------------+--------- cyl: 8 -----------+    
-       +----------------------------+-----------------------------+----------------------------+    
-  10.0 |                            |                             |           +----+           |    
-       |                            |                             |           |----|           |    
-       |                            |                             |           |----|           |    
-       |                            |                             |           |----|           |    
-   7.5 |                            |                             |           |----|           |    
- c     |+----+                      |                             |           |----|           |    
- o     ||----|                      |                             |           |----|                
- u     ||----|                      |                             |           |----|           cyl  
- n     ||----|                      |                             |           |----|           4    
- t 5.0 ||----|                      |                             |           |----|           6    
-       ||----+-----+                |      +----+                 |           |----|           8    
-       ||----|-----|                |      |oooo|                 |           |----|           +    
-       ||----|-----|                |      |oooo+-----+           |           |----|           |    
-   2.5 ||----|-----|                |      |oooo|ooooo|           |           |----|           |    
-       ||----|-----|                |      |oooo|ooooo|           |           |----+----+      |    
-       ||----|-----|                |      |oooo|ooooo|           |           |----|----|      |    
-       ||----|-----|                |      |oooo|ooooo|           |     +-----|----|----+-----+|    
-       ||----|-----|                |      |oooo|ooooo|           |     |-----|----|----|-----||    
-   0.0 +----------------------------+-----------------------------+----------------------------+    
-          2    3     4    5     6      2     3    4     5    6       2    3     4    5     6        
-                                                 wt                                                 
+       +---------- cyl: 4 ------------+---------- cyl: 6 -----------++--------- cyl: 8 ------------+
+       +------------------------------+-----------------------------++-----------------------------+
+  10.0 O                              |                             ||           +-----+           |
+       |                              |                             ||           |-----|           |
+       |                              |                             ||           |-----|           |
+       |                              |                             ||           |-----|           |
+   7.5 O                              |                             ||           |-----|           |
+ c     |+-----+                       |                             ||           |-----|           |
+ o     ||-----|                       |                             ||           |-----|           |
+ u     ||-----|                       |                             ||           |-----|           |
+ n     ||-----|                       |                             ||           |-----|           |
+ t 5.0 O|-----|                       |                             ||           |-----|           |
+       ||-----+----+                  |      +----+                 ||           |-----|           |
+       ||-----|----|                  |      |oooo|                 ||           |-----|           |
+       ||-----|----|                  |      |oooo+-----+           ||           |-----|           |
+   2.5 O|-----|----|                  |      |oooo|ooooo|           ||           |-----|           |
+       ||-----|----|                  |      |oooo|ooooo|           ||           |-----+----+      |
+       ||-----|----|                  |      |oooo|ooooo|           ||           |-----|----|      |
+       ||-----|----|                  |      |oooo|ooooo|           ||      +----|-----|----+-----+|
+       ||-----|----|                  |      |oooo|ooooo|           ||      |----|-----|----|-----||
+   0.0 O---O-----O-----O----O-----O---+---O-----O-----O----O-----O--++---O-----O-----O----O-----O--+
+          2     3     4    5     6       2     3     4    5     6       2     3     4    5     6    
+                                                    wt                                              
 ```
 
 ### `geom_sf` map of the Gulf of Mexico
@@ -164,7 +167,7 @@ ggplot(data = world) +
   annotate(geom = "text", x = -90, y = 26, label = "Gulf of Mexico", fontface = "italic", color = "grey22", size = 6) +
   coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE) + 
   theme_bw()
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
 <img src = "man/figures/gulfofmexico.png">
@@ -185,7 +188,7 @@ ascii(verbosity = 0, width = 200)
 tm_shape(World, projection = 'longlat') + 
   tm_polygons() +
   tm_layout("Long lat coordinates (WGS84)", inner.margins=c(0,0,.1,0))
-dev.off()
+invisible(dev.off())
 ```
 
 <img src = "man/figures/tmap.png">
@@ -200,7 +203,7 @@ mtcars %>%
   tibble::rownames_to_column() %>% 
   head(10) %>% 
   treemap(index = 'rowname', vSize = 'disp', palette = c('#ffffff'))
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
     +---------------------------------+----------------------+---------------------+-------------------+
@@ -237,7 +240,7 @@ library(igraph)
 ascii(width = 100)
 igraph::random.graph.game(6, 0.4) %>% 
   plot(vertex.shape = 'none')
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
 ``` 
@@ -247,13 +250,13 @@ jnk <- dev.off()
                                ++                                                                   
                                  ++                                                                 
                                    ++                                 3                             
-                                     ++                              +                              
-                                       +                           ++                               
+                                     ++                              ++                             
+                                       ++                          ++                               
                                         5  +++                   ++                                 
                                           +   ++++            +++                                   
                                            +      +++++     ++                                      
                                            +            6 ++                                        
-                                            +            +                                          
+                                            +           ++                                          
                                              +         + +                                          
                                              +       ++  +                                          
                                               +     +    +                                          
@@ -263,7 +266,7 @@ jnk <- dev.off()
                                                   ++      +                                         
                                                     ++    +                                         
                                                       ++  +                                         
-                                                        +                                           
+                                                        +++                                         
                                                          4                                          
                                                                                                     
 ```
@@ -272,34 +275,34 @@ jnk <- dev.off()
 
 ``` r
 ascii(width = 100) 
-pie(c(cool = 4, use = 1, less = 8))
-jnk <- dev.off()
+pie(c(cool = 4, but = 2, use = 1, less = 8))
+invisible(dev.off())
 ```
 
 ``` 
                                                                                                     
                                                                                                     
                                                                                                     
-                                           ##############                                           
-                                  use  #### #            ### cool                                   
-                                     ##      #              ###                                     
-                                   ###       #                 ##                                   
-                                  #   ##      #                  #                                  
-                                 #      ##     #                  #                                 
-                                #         ##    #                  #                                
-                               #            ### #                   #                               
-                               #               ###                  #                               
-                               #                 ####################                               
+                                   but     ##############                                           
+                                       ####     #        ####  cool                                 
+                                     ###        #           ###                                     
+                                   ##            #             ##                                   
+                                  ###            #               ##                                 
+                           use  ##   ###         #                #                                 
+                                #       ##       #                 #                                
+                               ######     ###    #                 ##                               
+                               #     ###########  #                 #                               
+                               #               ######################                               
                                #                                    #                               
+                               ##                                  ##                               
                                 #                                  #                                
-                                #                                  #                                
-                                 #                                                                  
-                                  #                             ##                                  
-                                   ##                          #                                    
-                                     ##                     ###                                     
-                                       ####              ###                                        
-                                     less  ##############                                           
-                                                                                                    
+                                 #                                #                                 
+                                  ##                            ##                                  
+                                   ##                          ##                                   
+                                     ###                     ##                                     
+                                       ####              ####                                       
+                                           ###############                                          
+                                          less  #                                                   
                                                                                                     
                                                                                                     
 ```
@@ -359,7 +362,7 @@ p
     - text        'Rendered with devout::ascii() more text goes here'   (   0.0,   13.3)  rot: 0 Hadj: 0   col:#000000FF (#) fill:#000000FF (#) lwd:1.00 lty:0 cex:1 fontface:1 fontsize:13.2 fontfamily: lineheight:0.9
 
 ``` r
-jnk <- dev.off()
+invisible(dev.off())
 ```
 
     - close
@@ -382,7 +385,7 @@ jnk <- dev.off()
         .
   - No support for carriage returns in text.
 
-## Other Non-Standard Device Ideas
+## Ideas for other Non-Standard Device
 
   - ANSI graphics
   - Colour ASCII/ANSI output
@@ -391,7 +394,7 @@ jnk <- dev.off()
   - [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine
     tooling instructions
   - Directly drive motors to power an etch-a-sketch
-  - Crochet and knitting patterns
+  - Crochet, cross-stitch and knitting patterns
   - Capture each call and turn it back into R code as a sequence of
     `grid` calls
   - Save drawing instructions as a CSV file

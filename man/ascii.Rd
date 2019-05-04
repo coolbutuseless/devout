@@ -8,7 +8,10 @@ ascii(filename = NULL, width = NULL, height = NULL,
   font_aspect = 0.5, verbosity = 0)
 }
 \arguments{
-\item{filename}{if given, write ascii to this file, otherwise write to console}
+\item{filename}{If given, write ascii to this file, otherwise write to console.
+If file is a format string e.g. "output%03i.txt", then this will be used
+to create a unique filename if multiple pages are output within the same
+\code{ascii()} call.}
 
 \item{width, height}{dimensions of text output (in characters). If NULL then
 auto-detect console width and set approximate aspect ratio at 1/2}

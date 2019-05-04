@@ -15,4 +15,5 @@ struct ascii_struct {
   double ylower;
   double yupper;
   int verbosity;
+  int page;
 };
