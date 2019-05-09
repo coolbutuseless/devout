@@ -307,6 +307,74 @@ invisible(dev.off())
                                                                                                     
 ```
 
+## Creating animations using `gganimate` and `asciicast`
+
+  - This uses the [asciicast
+    package](https://github.com/coolbutuseless/asciicast) for creating
+    an animation in the `asciicast` format as used by
+    [asciinema](http://asciinema.org)
+  - The code example for gganimate is taken from [gganimate
+    docs](https://gganimate.com/articles/gganimate.html)
+  - Because `gganimate` currently only supports some devices we need to
+    do a bit more manual work to setup the animation and to manually
+    feed the frames to a renderer.
+
+<!-- end list -->
+
+``` r
+library(ggplot2)
+library(gganimate)
+library(asciicast)
+library(devout)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The `gganimate` object
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+p <- ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point() + 
+  theme_bw() + 
+  transition_states(Species,
+                    transition_length = 2,
+                    state_length = 1)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Setup up a tempdir and filename for multiple outputs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tdir <- tempdir()
+asciicast_filename <- paste0(tdir, "/gganimate-%04i.txt")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Open an ascii device and have `gganimate` animate into it
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ascii(width = 150, filename = asciicast_filename)
+animate(p, nframes = 100, device = 'current')
+invisible(dev.off())
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Find all files that were just rendered
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+txt_files <- list.files(tdir, pattern = "\\.txt$", full.names = TRUE)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# create a flipbook
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cast <- asciicast::create_asciicast_flipbook(txt_files, filename = "out.cast", fps = 15)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This currently won't play in Rmarkdown or in github, but it will 
+# play in the viewer in Rstudio.  
+# For this document, I have uploaded the ".cast" file to asciinema.com and 
+# linked to there.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+asciicast::play_asciicast(cast)
+```
+
+<a href="https://asciinema.org/a/244284?autoplay=1&loop=1&theme=solarized-light"><img src="https://asciinema.org/a/244284.png" width="836"/></a>
+
+#### Actual gganimate gif output for reference
+
+<img src="man/figures/example.gif" width="100%" />
+
 ## `descriptive()` device
 
 The descriptive device gives a blow-by-blow account of what the graphics
