@@ -22,40 +22,125 @@ knitr::opts_chunk$set(
 set.seed(1)
 mtcars <- mtcars %>% 
   mutate(cyl = as.factor(cyl))
-
 ```
-# devout - non-standard devices for graphical output from R
+
+
+
+
+```{r echo = FALSE, eval = FALSE}
+# Quick logo generation. Borrowed heavily from Nick Tierney's Syn logo process
+library(magick)
+library(showtext)
+font_add_google("Abril Fatface", "gf")
+
+
+# pkgdown::build_site(override = list(destination = "../coolbutuseless.github.io/package/devout"))
+```
+
+
+```{r echo = FALSE, eval = FALSE}
+img <- image_read("man/figures/white.png")
+
+
+hexSticker::sticker(subplot  = img,
+                    s_x      = 0.92,
+                    s_y      = 1.2,
+                    s_width  = 1.5,
+                    s_height = 0.95,
+                    package  = "/dev/out/",
+                    p_x      = 1,
+                    p_y      = 1,
+                    p_color  = "#223344",
+                    p_family = "gf",
+                    p_size   = 9,
+                    h_size   = 1.2,
+                    h_fill   = "#ffffff",
+                    h_color  = "#223344",
+                    filename = "man/figures/logo.png")
+
+image_read("man/figures/logo.png")
+```
+
+
+
+# devout   <img src="man/figures/logo.png" align="right" height=230/>
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-![](https://img.shields.io/badge/Status-alpha-orange.svg)
+![](http://img.shields.io/badge/dev-out-blue.svg)
 <!-- badges: end -->
 
 
-`devout` is a package for some of some non-standard devices for R.
+`devout` is a package that enables R graphics devices to be written in plain R.
 
-A graphics device (e.g. `png()`, `pdf()`) is an interface to which R passes
-plotting instructions. The graphics device then stores these in the appropriate
-format for the given filetype.
+`devout` uses a pseudo-graphics-device which translates graphics
+calls into a call to an R function of your design.  
 
-However, there is no requirement that the output is saved to a file, nor is there
-any requirement that the output is saved as a graphic.
+This means we can create alternative output devices (like `pdf()` or `png()`) using
+only plain R.
 
+
+
+## How normal (C/C++) graphics devices work
+
+
+```{r echo=FALSE, eval=FALSE}
+# /Users/mike/projects/devout/man/figures/graffle/graphics-device/Canvas 4.png
+file.copy("man/figures/graffle/graphics-device/Canvas 4.png", "man/figures/graffle/graphics-device/Canvas 4a.png", overwrite = TRUE)
+system("convert -delay 300 man/figures/graffle/graphics-device/*.png man/figures/graffle/graphics-device/anim.gif")
+system("convert man/figures/graffle/graphics-device/anim.gif \\( +clone -set delay 500 \\) +swap +delete  man/figures/graffle/graphics-device/animpause.gif")
+system("gifsicle man/figures/graffle/graphics-device/animpause.gif --colors 8 > man/figures/graffle/graphics-device/animo.gif")
+
+unlink("man/figures/graffle/graphics-device/anim.gif")
+unlink('man/figures/graffle/graphics-device/animpause.gif')
+```
+
+<details open>
+<summary> <span title='animation'> animation (click to close) </summary>
+<img src="man/figures/graffle/graphics-device/animo.gif" />
+</details>
+
+## How the devout device enables plain R graphics devices
+
+
+
+```{r echo=FALSE, eval=FALSE}
+system("convert -delay 300 man/figures/graffle/devout-device/*.png man/figures/graffle/devout-device/anim.gif")
+system("convert man/figures/graffle/devout-device/anim.gif \\( +clone -set delay 500 \\) +swap +delete  man/figures/graffle/devout-device/animpause.gif")
+system("gifsicle man/figures/graffle/devout-device/animpause.gif --colors 8 > man/figures/graffle/devout-device/animo.gif")
+
+unlink("man/figures/graffle/devout-device/anim.gif")
+unlink('man/figures/graffle/devout-device/animpause.gif')
+```
+
+<details open>
+<summary> <span title='animation'> animation (click to close) </summary>
+<img src="man/figures/graffle/devout-device/animo.gif" />
+</details>
 
 ## What's in the box
 
-* `ascii()` - a non-standard device which outputs an ascii representation of the plot 
-  to a file, or to the console or terminal
-* `descriptive()` - a non-standard output device that describes what the output looks like
+* `rdevice()` - a generic device wrapper which will call the given R function to 
+  handle the graphics drawing.
+* Two example devices written in plain R (but using the underlying `rdevice()`)
+    * `descriptive()` - an output device which dumps information about the device calls.
+    * `ascii()` - a graphics device which outputs an ascii representation of the plot 
+       to a file, or to the console/terminal
 
+## How do I write my own graphics device?
 
-## News:
+If you want to write your own graphics device in plain R using `devout` you can:
 
-* v0.1.0 - initial release
-* v0.1.1 
-    - Added support for path objects, so more map plots now work.
-    - More example plots - `sf`, `pie`, `igraph`
-* v0.1.2 - Added support for multiple page output
+1. Read the `R/ascii-callback.R` included in the package
+2. Read the vignettes.
+
+A series of 4 vignettes are included in this package. They walk through the process
+of writing a naive SVG graphics device.
+
+* [Creating an SVG device - part 1 - The Callback Function](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-01.html)
+* [Creating an SVG device - part 2 - The Drawing Canvas](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-02.html)
+* [Creating an SVG device - part 3 - Rendering Graphics](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-03.html)
+* [Creating an SVG device - part 4 - %#$^ you I won't do what you tell me](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-04.html)
 
 ## Installation
 
@@ -67,10 +152,67 @@ remotes::install_github("coolbutuseless/devout")
 ```
 
 
-## `ascii()` device
+
+# Simple device written in plain R: `debug` device
+
+The following 5 lines of code are about the simplest device you can write with 
+`devout` in plain R.
+
+This devices prints each of the device calls that were generated when the 
+plot was "drawn".
+
+```{r}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Write a function which takes 3 arguments
+# @param device_call name of device function call
+# @param args the arguments to that device call
+# @param state current state of the graphics device
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+debug_function <- function(device_call, args, state) {
+  if (device_call %in% c('mode', 'strWidthUTF8', 'metricInfo')) return()
+  cat("[", device_call, "]: ")
+  cat(paste(names(args), args, sep = " = ", collapse = ",  "), "\n", sep = "")
+}
+```
+
+
+```{r eval=FALSE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Call the 'rdevice' and tell it that all calls should be passed to 
+# the above 'debug_function'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rdevice('debug_function') 
+plot(1:10)
+invisible(dev.off())
+```
+
+
+```{r echo=FALSE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Open the 'rdevice' and tell it that all graphics calls should 
+# be passed to the above 'debug_function()'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rdevice('debug_function') 
+plot(1:10)
+invisible(dev.off())
+```
+
+
+# `ascii()` device
+
+This is an example of a more complete graphics device.  It is written in plain R and
+relies on `devout` for all the interfacing with C++ and the internals of R.
 
 The `ascii()` device draws an approximation of the graphics using ASCII characters
 on the console (by default) or saved to a text file (if specified).
+
+
+Limitations
+
+* No support for: filled polygons, plotmath, alpha blending, angled text, rasters
+* You should probably always add `theme(legend.position = 'none')` because legends look awful in ascii.
+
+
 
 ### `ggplot2`: Basic scatterplot
 
@@ -92,38 +234,21 @@ invisible(dev.off())
 
 
 
-```{r echo = FALSE, eval = FALSE}
-p <- ggplot(mtcars) + 
-  geom_boxplot(aes(cyl, wt)) +
-  theme_bw()
+### `pie` plot in base R
 
-ascii(width = 100)
-p
+```{r}
+ascii(width = 100) 
+pie(c(cool = 4, but = 2, use = 1, less = 8))
 invisible(dev.off())
 ```
 
 
-### `ggplot2` Facetted Histogram with a `fill` aesthetic
 
-```{r eval = TRUE}
-p <- ggplot(mtcars) + 
-  theme_bw()  +
-  geom_histogram(aes(wt, fill = cyl), bins = 5, colour = 'black') +
-  labs(title = "Facetted Histogram with 'fill' Aesthetic", 
-    subtitle = "Rendered with devout::ascii()") + 
-  facet_wrap(~cyl, labeller = label_both) +
-  theme(
-    panel.grid = element_blank(),
-    legend.position = 'none'
-  )
+### `geom_sf()` map of the Gulf of Mexico
 
-ascii(width = 100)
-p
-invisible(dev.off())
-```
+<details closed>
+<summary> <span title='Simple features example'> geom_sf() example (click to open) </summary>
 
-
-### `geom_sf` map of the Gulf of Mexico
 
 * Example taken from the [r-spatial website](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
 * This would probably look better with filled polygons, but they are not supported yet.
@@ -150,218 +275,27 @@ invisible(dev.off())
 
 <img src = "man/figures/gulfofmexico.png">
 
-
-
-### `tmap` world map
-
-* Thanks to [Barry Rowlingson](https://twitter.com/geospacedman) for pointing out
-that basic mapping didn't work in v0.1.0 and posting an example
-
-```{r eval = FALSE}
-library(tmap)
-data(World)
-
-ascii(verbosity = 0, width = 200)
-tm_shape(World, projection = 'longlat') + 
-  tm_polygons() +
-  tm_layout("Long lat coordinates (WGS84)", inner.margins=c(0,0,.1,0))
-invisible(dev.off())
-```
-
-<img src = "man/figures/tmap.png">
-
-
-### `treemap`
-
-```{r echo = FALSE}
-data(mtcars)
-```
-
-
-```{r}
-library(treemap)
-
-ascii(width = 100)
-mtcars %>% 
-  tibble::rownames_to_column() %>% 
-  head(10) %>% 
-  treemap(index = 'rowname', vSize = 'disp', palette = c('#ffffff'))
-invisible(dev.off())
-```
-
-
-### `igraph` network plot
-
-
-```{r echo = FALSE}
-set.seed(3)
-```
-
-
-```{r warning=FALSE, message=FALSE}
-library(igraph)
-
-ascii(width = 100)
-igraph::random.graph.game(6, 0.4) %>% 
-  plot(vertex.shape = 'none')
-invisible(dev.off())
-```
-
-
-
-### `pie` plot in base R
-
-```{r}
-ascii(width = 100) 
-pie(c(cool = 4, but = 2, use = 1, less = 8))
-invisible(dev.off())
-```
-
-
-
-## Creating animations using `gganimate` and `asciicast`
-
-* This uses the [asciicast package](https://github.com/coolbutuseless/asciicast) for creating
-  an animation in the `asciicast` format as used by [asciinema](http://asciinema.org)
-* The code example for gganimate is taken from [gganimate docs](https://gganimate.com/articles/gganimate.html)
-* Because `gganimate` currently only supports some devices we need to do a bit more manual work to setup the animation and to manually feed the frames to a renderer.
-
-
-```{r eval = FALSE}
-library(ggplot2)
-library(gganimate)
-library(asciicast)
-library(devout)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# The `gganimate` object
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p <- ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
-  geom_point() + 
-  theme_bw() + 
-  transition_states(Species,
-                    transition_length = 2,
-                    state_length = 1)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Setup up a tempdir and filename for multiple outputs
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tdir <- tempdir()
-asciicast_filename <- paste0(tdir, "/gganimate-%04i.txt")
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Open an ascii device and have `gganimate` animate into it
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ascii(width = 150, filename = asciicast_filename)
-animate(p, nframes = 100, device = 'current')
-invisible(dev.off())
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Find all files that were just rendered
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-txt_files <- list.files(tdir, pattern = "\\.txt$", full.names = TRUE)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# create a flipbook
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cast <- asciicast::create_asciicast_flipbook(txt_files, filename = "out.cast", fps = 15)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# This currently won't play in Rmarkdown or in github, but it will 
-# play in the viewer in Rstudio.  
-# For this document, I have uploaded the ".cast" file to asciinema.com and 
-# linked to there.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-asciicast::play_asciicast(cast)
-```
-
-
-<a href="https://asciinema.org/a/244284?autoplay=1&loop=1&theme=solarized-light"><img src="https://asciinema.org/a/244284.png" width="836"/></a>
-
-
-#### Actual gganimate gif output for reference
-
-
-```{r echo = FALSE}
-knitr::include_graphics("man/figures/example.gif")
-```
-
-
-
-```{r eval = FALSE, echo = FALSE}
-# using gganimate directly only works with my hacked version
-# if (interactive()) {
-#   ac <- animate(p, nframes = 10, device = 'ascii', renderer = asciicast_renderer(asciicast_filename = 'out.cast'), width = 150)
-# }
-
-# If my issue #318 and PR #319 for gganimate get accepted - then the following should work automatically with gganimate
-# if (interactive()) {
-#   ac <- animate(p, nframes = 10, device = 'ascii', suffix = 'txt', renderer = asciicast_renderer(asciicast_filename = 'out.cast'), width = 150)
-# }
-```
+</details><br />
 
 
 
 
+## Ideas for other Output Devices
 
-## `descriptive()` device
-
-The descriptive device gives a blow-by-blow account of what the graphics
-device is being asked to draw.
-
-This device is useful to use as a starting point for creating other graphics devices - 
-I used it as the basis for the `ascii()` device and added featues as I needed them.
-
-
-
-```{r}
-p <- ggplot(mtcars) + 
-  geom_point(aes(mpg, wt)) +
-  labs(title = "Rendered with devout::ascii() more text goes here") +
-  theme_void()
-
-descriptive()
-p
-invisible(dev.off())
-```
-
-## Limitations
-
-* No filled polygons.
-* No anti-aliasing.
-* No UTF text support.
-* No plotmath support.
-* No angled text other than 0 or 90 degrees.
-* No raster support.
-* No sanity checking or safety checking of 'filename' string.
-* No way to have un-filled circles.
-* No stroke aesthetic for cicles.
-* No real support for legends.
-    * Legends get drawn, but a colourscale (for example) doesn't really map 
-      to an ascii representation so it looks rubbish.
-    * You should probably always add `theme(legend.position = 'none')` .
-* No support for carriage returns in text.
-
-
-## Ideas for other Non-Standard Device
-
-* ANSI graphics
 * Colour ASCII/ANSI output
-* audio + midi output
+* Audio output
 * HPGL plotting output
 * [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine tooling instructions
 * Directly drive motors to power an etch-a-sketch
-* Crochet, cross-stitch and knitting patterns
-* Capture each call and turn it back into R code as a sequence of `grid` calls
-* Save drawing instructions as a CSV file
 
 
 
-## References:
 
-* [svglite source code](https://github.com/r-lib/svglite)
-* [thomasp85's](https://twitter.com/thomasp85) [devoid package](https://github.com/r-lib/devoid)
-* The defunct `RGraphicsDevice` project
-    * http://www.omegahat.net/RGraphicsDevice/
-    * http://www.omegahat.net/RGraphicsDevice/overview.html
+## News:
+
+* v0.2.0 - Major refactor. `devout` is now a way of writing graphics devices in 
+           plain R with the `ascii()` device as an example. 
+* v0.1.2 - Added support for multiple page output
+* v0.1.1 - Added support for path objects, so more map plots now work.
+* v0.1.0 - initial release
 

@@ -1,0 +1,139 @@
+activate:
+  desc: Called when a device becomes the active device.  For example, it can be used to change the title of a window to indicate the active status of the device to the user.  Not all device types will do anything
+  omittable: true
+cap:
+  desc: Get the current contents of the device.
+  return:
+    contents: contents of device [int matrix] (row-major)
+circle:
+  desc: Draw a circle
+  args:
+    x: circle centre x coord [dbl]
+    'y': circle centre y coord [dbl]
+    r: radius [dbl]
+clip:
+  desc: Set the current rectangular clipping region
+  args:
+    x0: limit of clipping [dbl]
+    x1: limit of clipping [dbl]
+    y0: limit of clipping [dbl]
+    y1: limit of clipping [dbl]
+close:
+  desc: Called when device is killed e.g. dev.off()
+deactivate:
+  desc: Called when a device is deactivated.
+  omittable: true
+eventHelper:
+  desc: called prior to looking for graphics events
+  omittable: true
+holdflush:
+  desc: Allows graphics devices to have multiple levels of suspension; when this reaches zero output is flushed
+  omittable: true
+  args:
+    level: current level [int]
+  return:
+    level: current level? [int]
+line:
+  desc: Draw a line
+  args:
+    x1: coord [dbl]
+    x2: coord [dbl]
+    y1: coord [dbl]
+    y2: coord [dbl]
+locator:
+  desc: return the location of the next mouse click
+  omittable: true
+  return:
+    x: coord [dbl] (default = 0)
+    'y': coord [dbl] (default = 0)
+metricInfo:
+  desc: Calculate size information for a character
+  args:
+    c: integer
+  return:
+    ascent: ascender height [dbl] (default = 0)
+    descent: descender height [dbl] (default = 0)
+    width: char width [dbl] (default = 0)
+mode:
+  desc: Called when graphics engine starts drawing (mode = 1) or stop drawing (mode = 2).
+  omittable: true
+  args:
+    mode: 1 = drawing started, 2 = drawing stopped [int]
+newFrameConfirm:
+  desc: Does the device have a device-specific way to confirm a new frame?
+  return:
+    is_device_specific: truthiness [bool] (default = FALSE)
+newPage:
+  desc: Called when plot requires a new page.
+onExit:
+  desc: Called when user has aborted some operation
+  omittable: true
+path:
+  desc: Draw one or more sets of opoints as a single path.
+  args:
+    x: coords [vec dbl]
+    'y': corrds [vec dbl]
+    npoly: number of polylines in the path [int]
+    nper: number of elements in each polyline [vec int]
+    winding: winding order [bool].  FALSE = even-odd, TRUE = non-zero
+polygon:
+  desc: draw a polygon
+  args:
+    n: number of points in polygon [int]
+    x: coords [vec dbl]
+    'y': coords [vec dbl]
+polyline:
+  desc: draw a polyline
+  args:
+    n: number of points in polyline [int]
+    x: coords [vec dbl]
+    'y': coords [vec dbl]
+raster:
+  desc: draw a raster image
+  omittable: true
+  args:
+    raster: row-major image data with every four bytes given 1 colour in ABGR information
+    w: raster width [int]
+    h: raster height [int]
+    x: coord of bottom left corner [dbl]
+    'y': coord of bottom left corner [dbl]
+    width: display width [dbl]
+    height: display height [dbl]
+    rot: raster rotation in degrees. positive rot = anticlockwise rotation
+    interpolate: [bool]
+size:
+  desc: Return information about the device size
+  omittable: true
+  return:
+    left: coord [dbl] (default = dd$$left)
+    right: coord [dbl] (default = dd$$right)
+    top: coord [dbl] (default = dd$$top)
+    bottom: coord [dbl] (default = dd$$bottom)
+strWidth:
+  desc: Return the width of a string. Called if dd$$hasTextUTF8 == FALSE
+  args:
+    str: string
+  return:
+    width: display width of string [dbl] (default = nchar(str) * gc$$cex * gc$$ps)
+strWidthUTF8:
+  desc: Return the width of a string. Called if dd$$hasTextUTF8 == TRUE
+  args:
+    str: string
+  return:
+    width: display width of string [dbl] (default = nchar(str) * gc$$cex * gc$$ps)
+text:
+  desc: Draw text on device. Called if dd$$hasTextUTF8 == FALSE
+  args:
+    x: coord [dbl]
+    'y': coord [dbl]
+    str: string
+    rot: angle of rotation in degrees [dbl]
+    hadj: horizontal adjustment [dbl]
+textUTF8:
+  desc: Draw text on device. Called if dd$$hasTextUTF8 == TRUE
+  args:
+    x: coord [dbl]
+    'y': coord [dbl]
+    str: string
+    rot: angle of rotation in degrees [dbl]
+    hadj: horizontal adjustment [dbl]

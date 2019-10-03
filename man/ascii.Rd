@@ -2,27 +2,27 @@
 % Please edit documentation in R/ascii.R
 \name{ascii}
 \alias{ascii}
-\title{Create an ascii graphics device}
+\title{Graphics device for ASCII output}
 \usage{
 ascii(filename = NULL, width = NULL, height = NULL,
-  font_aspect = 0.5, verbosity = 0)
+  font_aspect = 0.45, ...)
 }
 \arguments{
-\item{filename}{If given, write ascii to this file, otherwise write to console.
-If file is a format string e.g. "output%03i.txt", then this will be used
-to create a unique filename if multiple pages are output within the same
-\code{ascii()} call.}
+\item{filename}{If given, write ascii to this file, otherwise write to console.}
 
-\item{width, height}{dimensions of text output (in characters). If NULL then
-auto-detect console width and set approximate aspect ratio at 1/2}
+\item{width, height}{dimensions of text output (in characters). Default: NULL
+(auto-detect)}
 
 \item{font_aspect}{Character spacing horizontally and vertically are almost
-never the same. On many terminals character spacing horizontally is
-half the spacing vertically. This argument is only used if width
-is autodetected and/or height is not specified. Default: 0.5}
+never the same. On many terminals character resolution vertically is
+half the resolution horizontally.  Adjust this value if circles don't
+look right. Default: 0.45}
 
-\item{verbosity}{level. default: 0.  valid: 0, 1, 2}
+\item{...}{other parameters passed to the rdevice}
 }
 \description{
-Graphics primitives will be rendered using ascii characters.
+Graphics primitives will be rendered using ASCII characters.
+}
+\details{
+Uses \code{devout::rdevice()}.
 }

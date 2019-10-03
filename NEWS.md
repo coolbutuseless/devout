@@ -1,4 +1,15 @@
 
+# devout 0.2.0
+
+* Major internal refactor
+* Added the `rdevice` which allows the user to write devices using just R
+* Re-wrote `ascii` device to use the underlying `rdevice`
+
+# devout 0.1.3
+
+* Inclusion of `rdevice()` such that graphics devices can be written in R
+
+
 # devout 0.1.2
 
 * Added support for multiple page output
@@ -12,6 +23,7 @@
 # devout 0.1.1
 
 * Added support for path objects, so `tmap` output now works.
+
 
 # devout 0.1.0
 

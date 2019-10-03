@@ -1,0 +1,216 @@
+---
+title: "Creating an SVG device - Part 4"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating an SVG device - Part 4}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(xml2)
+  library(devout)
+  library(glue)
+  library(ggplot2)
+})
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+Introduction
+==============================================================================
+
+This series of vignettes will walk through the process of creating a very basic SVG
+output device using `devout`.
+
+The only code to be written is R code.  All the tricky C/C++ code is taken care
+of within `devout`.
+
+Vignettes in this series:
+
+1. A simple callback function
+2. Setting up a 'canvas' upon which to write the SVG
+3. Adding support for device calls which draw on the canvas
+4. This vignette:
+    * Simple experimentation
+    * Just because we're told to draw a line doesn't mean we have to
+
+
+%#$^ you I won't do what you tell me.
+==============================================================================
+
+In the previous vignettes we filled out the `svg_callback()` function with 
+more support for drawing graphics primitives.
+
+Now comes the interesting part: just because the device call wants us to draw a
+line between two points, we don't have to do exactly as asked.  For example, instead
+of drawing a single line from A to B, we could:
+
+* Draw a wavy line
+* Draw multiple jittered lines
+* Draw a curve
+* Replace the line with a sequence of circles
+* Play `beepr::beep()` instead of drawing anything at all.
+* Draw a spline
+* Draw a tapered polygon to mimic a thick brush stroke
+
+The following version of the graphics device adds multiple jittered lines for 
+every line requested.  It doesn't look pretty, or very interesting, but hopefully 
+shows that rule breaking is possible now that we control the graphics device!
+
+
+```{r echo = FALSE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When opening a device
+#  - create a "canvas".  For svg, the canvas is just a text string of SVG 
+#    commands that we'll keep adding to with each device call
+#  - add the canvas to the 'state$rdata' list
+#  - always return the state so we keep the canvas across different device calls
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_open <- function(args, state) {
+  state$rdata$svg <- glue::glue('<svg height="{state$dd$bottom/72}" width="{state$dd$right/72}">')
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When the device is closed, add the closing svg tag and output to file
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_close <- function(args, state) {  
+  state$rdata$svg <- paste(state$rdata$svg, "</svg>", sep = "\n")
+  writeLines(state$rdata$svg, state$rdata$filename)
+  state
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a circle to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_circle <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<circle cx="{args$x/72}" cy="{args$y/72}" r="{args$r}" stroke="black" fill="black" />'),
+    sep = "\n"
+  )
+  state
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a line to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_polyline <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<polyline points="{paste(args$x/72, args$y/72, sep=",", collapse = " ")}" stroke="black"  fill = "none" />'),
+    sep = "\n"
+  )
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add text to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_text <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<text x="{args$x/72}" y="{args$y/72}" transform="rotate({-args$rot}, {args$x/72}, {args$y/72})" fill="black">{args$str}</text>'),
+    sep = "\n"
+  )
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a polyline to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_line <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<line x1="{args$x1/72}" y1="{args$y1/72}" x2="{args$x2/72}" y2="{args$y2/72}" stroke="black"  fill = "none" />'),
+    sep = "\n"
+  )
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Call a different function to match each of the device calls we handle.
+# Always return the state
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_callback <- function(device_call, args, state) {
+  switch(
+    device_call,
+    "open"         = svg_open      (args, state),
+    "close"        = svg_close     (args, state),
+    "circle"       = svg_circle    (args, state),
+    "line"         = svg_line      (args, state),
+    "polyline"     = svg_polyline  (args, state),
+    "textUTF8"     = svg_text      (args, state),
+    state
+  )
+}
+```
+
+```{r include=FALSE}
+set.seed(1)
+```
+
+
+```{r}
+svg_polyline <- function(args, state) {
+  n <- length(args$x)
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<polyline points="{paste(args$x/72 + rnorm(n) * 3, args$y/72 + rnorm(n) * 3, sep=",", collapse = " ")}" stroke="black"  stroke-opacity="0.2" fill = "none" />'),
+    glue::glue('<polyline points="{paste(args$x/72 + rnorm(n) * 3, args$y/72 + rnorm(n) * 3, sep=",", collapse = " ")}" stroke="black"  stroke-opacity="0.2" fill = "none" />'),
+    glue::glue('<polyline points="{paste(args$x/72 + rnorm(n) * 3, args$y/72 + rnorm(n) * 3, sep=",", collapse = " ")}" stroke="black"  stroke-opacity="0.2" fill = "none" />'),
+    sep = "\n"
+  )
+  state
+}
+
+```
+
+
+
+
+## Example plot 
+
+```{r}
+rdevice("svg_callback", filename = "svg/test-experiment.svg", width=10*72, height = 6*72) 
+ggplot(mtcars) + geom_point(aes(mpg, wt))
+invisible(dev.off())
+```
+
+
+
+
+<details closed>
+<summary> View the raw SVG text </summary>
+
+```{r}
+cat(paste(readLines("svg/test-experiment.svg"), collapse = "\n"))
+```
+
+</details> <br />
+
+
+Open the output in an SVG viewer
+
+```{r out.width="100%", fig.width=10}
+txt <- readLines("svg/test-experiment.svg")
+htmltools::HTML(txt)
+```
+
+<br />
+
+
+
+
+
+
+
+

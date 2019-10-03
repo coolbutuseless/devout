@@ -1,0 +1,168 @@
+---
+title: "Creating an SVG device - Part 2"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating an SVG device - Part 2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(xml2)
+  library(devout)
+  library(glue)
+  library(ggplot2)
+})
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  dev      = "svglite",
+  fig.ext  = ".svg"
+)
+```
+
+
+Introduction
+==============================================================================
+
+This series of vignettes will walk through the process of creating a very basic SVG
+output device using `devout`.
+
+The only code to be written is R code.  All the tricky C/C++ code is taken care
+of within `devout`.
+
+Vignettes in this series:
+
+1. A simple callback function
+2. This Vignette:
+    * What is SVG?
+    * Setting up a 'canvas' upon which to write the SVG
+3. Adding support for device calls which draw on the canvas
+4. Simple experimentation
+
+
+What is SVG?
+==============================================================================
+
+"Scalable Vector Graphics (SVG) is an XML-based vector image format for two-dimensional graphics with support for interactivity and animation" - [wikipedia](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics)
+
+An SVG file is just a text file with a specific format which contains instructions
+for drawing vector shapes e.g.
+
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<svg width="391" height="391" viewBox="-70.5 -70.5 391 391" xmlns="http://www.w3.org/2000/svg">
+  <rect x="25" y="25" width="200" height="200" fill="lime" stroke-width="4" stroke="pink" />
+  <circle cx="125" cy="125" r="75" fill="black" />
+  <polyline points="50,150 50,200 200,200 200,100" stroke="red" stroke-width="4" fill="none" />
+  <line x1="50" y1="50" x2="200" y2="200" stroke="blue" stroke-width="4" />
+</svg>
+```
+
+
+
+Set up a "canvas"
+==============================================================================
+
+Since SVG is a text format, our canvas for drawing instructions is just a
+character string.
+
+Out *SVG callback* from the prior vignette needs to be expanded so that:
+
+* When `device_call = 'open'` is called, a new string is created.
+* When `device_call = 'close'` is called, the string is written to file 
+
+In this (and future examples), the `svg_callback` is a function which really
+just contains a giant switch statement which then calls particular functions
+for each `device_call`
+
+```{r echo = TRUE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Call a different function to match each of the device calls we handle.
+# Always return the state
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_callback <- function(device_call, args, state) {
+  switch(
+    device_call,
+    "open"  = svg_open (args, state),
+    "close" = svg_close(args, state),
+    state
+  )
+}
+```
+
+
+In the following, `svg_open()` is called when `device_call = 'open'` and it 
+creates a character string (called "svg") which contains a minimal SVG document.
+
+Note that the string is created as part of the `state$rdata`.  It needs to be part
+of the `state` as this is the only data structure which is passed to-and-from the R internals
+and every device call.
+
+```{r echo = TRUE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When opening a device
+#  - create a "canvas".  For svg, the canvas is just a text string of SVG 
+#    commands that we'll keep adding to with each device call
+#  - add the canvas to the 'state$rdata' list
+#  - always return the state so we keep the canvas across different device calls
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_open <- function(args, state) {
+  state$rdata$svg <- '
+<svg height="100" width="100">
+  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+</svg>'
+  
+  state
+}
+```
+
+
+`svg_close()` is called when `device_call = 'close'` and this function
+writes the canvas (`state$rdata$svg`) to a file - `state$rdata$filename`.
+
+
+```{r echo = TRUE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When the device is closed, output the SVG somehow
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_close <- function(args, state) {
+  writeLines(state$rdata$svg, state$rdata$filename)
+  state
+}
+```
+
+
+## Example plot
+
+The filename to write to comes from the rdevice call.  The first argument is
+always the name of the callback function.  Any further named arguments become
+named elements of `state$rdata` and made available to the callback function.
+
+
+```{r echo = TRUE}
+rdevice("svg_callback", filename = "svg/test-canvas.svg") 
+plot(1:10)
+invisible(dev.off())
+```
+
+
+View the SVG text output
+
+```{r}
+cat(paste(readLines("svg/test-canvas.svg"), collapse = "\n"))
+```
+
+Open the output in an SVG viewer
+
+```{r}
+txt <- readLines("svg/test-canvas.svg")
+htmltools::HTML(txt)
+```
+
+
+
+

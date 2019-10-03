@@ -5,37 +5,21 @@
 
 using namespace Rcpp;
 
-// ascii_
-Rcpp::IntegerMatrix ascii_(std::string filename, unsigned int width, unsigned int height, int verbosity);
-RcppExport SEXP _devout_ascii_(SEXP filenameSEXP, SEXP widthSEXP, SEXP heightSEXP, SEXP verbositySEXP) {
+// rdevice_
+bool rdevice_(std::string rfunction, SEXP rdata);
+RcppExport SEXP _devout_rdevice_(SEXP rfunctionSEXP, SEXP rdataSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type width(widthSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type height(heightSEXP);
-    Rcpp::traits::input_parameter< int >::type verbosity(verbositySEXP);
-    rcpp_result_gen = Rcpp::wrap(ascii_(filename, width, height, verbosity));
-    return rcpp_result_gen;
-END_RCPP
-}
-// descriptive_
-bool descriptive_(int verbosity, int width, int height);
-RcppExport SEXP _devout_descriptive_(SEXP verbositySEXP, SEXP widthSEXP, SEXP heightSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type verbosity(verbositySEXP);
-    Rcpp::traits::input_parameter< int >::type width(widthSEXP);
-    Rcpp::traits::input_parameter< int >::type height(heightSEXP);
-    rcpp_result_gen = Rcpp::wrap(descriptive_(verbosity, width, height));
+    Rcpp::traits::input_parameter< std::string >::type rfunction(rfunctionSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type rdata(rdataSEXP);
+    rcpp_result_gen = Rcpp::wrap(rdevice_(rfunction, rdata));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_devout_ascii_", (DL_FUNC) &_devout_ascii_, 4},
-    {"_devout_descriptive_", (DL_FUNC) &_devout_descriptive_, 3},
+    {"_devout_rdevice_", (DL_FUNC) &_devout_rdevice_, 2},
     {NULL, NULL, 0}
 };
 

@@ -1,0 +1,206 @@
+---
+title: "Creating an SVG device - Part 3"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating an SVG device - Part 3}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(xml2)
+  library(devout)
+  library(glue)
+  library(ggplot2)
+})
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+Introduction
+==============================================================================
+
+This series of vignettes will walk through the process of creating a very basic SVG
+output device using `devout`.
+
+The only code to be written is R code.  All the tricky C/C++ code is taken care
+of within `devout`.
+
+Vignettes in this series:
+
+1. A simple callback function
+2. Setting up a 'canvas' upon which to write the SVG
+3. This vignette:
+    * Adding support for device calls which draw on the canvas
+4. Simple experimentation
+
+
+
+Adding support for device calls which draw on the canvas
+==============================================================================
+
+In the previous vignettes we create a callback function (`svg_callback()`) and
+implemented handlers for `device_call = "open"` and `"close"`.
+
+Now we will add handlers for the device calls which want to draw a graphics 
+primitive e.g. `rect`, `line`, `circle`.
+
+The `svg_open()` and `svg_close()` functions are adapted to only write the lead-in
+and lead-out parts of an SVG document.  The size for the SVG canvas is found 
+in the device settings i.e. `state$dd`.  For a list of all the possible device settings, 
+please see `devinfo$dd`.
+
+<details closed>
+
+<summary> <span title='dd info'> device settings (click to open) </summary> 
+
+```{r}
+devinfo$dd %>%
+  knitr::kable(caption = "Device settings")
+```
+
+</details><br />
+
+
+```{r}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When opening a device
+#  - create a "canvas".  For svg, the canvas is just a text string of SVG 
+#    commands that we'll keep adding to with each device call
+#  - add the canvas to the 'state$rdata' list
+#  - always return the state so we keep the canvas across different device calls
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_open <- function(args, state) {
+  state$rdata$svg <- glue::glue('<svg height="{state$dd$bottom/72}" width="{state$dd$right/72}">')
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When the device is closed, add the closing svg tag and output to file
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_close <- function(args, state) {  
+  state$rdata$svg <- paste(state$rdata$svg, "</svg>", sep = "\n")
+  writeLines(state$rdata$svg, state$rdata$filename)
+  state
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a circle to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_circle <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<circle cx="{args$x/72}" cy="{args$y/72}" r="{args$r}" stroke="black" fill="black" />'),
+    sep = "\n"
+  )
+  state
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a line to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_polyline <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<polyline points="{paste(args$x/72, args$y/72, sep=",", collapse = " ")}" stroke="black"  fill = "none" />'),
+    sep = "\n"
+  )
+  state
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add a polyline to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_line <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<line x1="{args$x1/72}" y1="{args$y1/72}" x2="{args$x2/72}" y2="{args$y2/72}" stroke="black"  fill = "none" />'),
+    sep = "\n"
+  )
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add text to the SVG
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_text <- function(args, state) {
+  state$rdata$svg <- paste(
+    state$rdata$svg,
+    glue::glue('<text x="{args$x/72}" y="{args$y/72}" transform="rotate({-args$rot}, {args$x/72}, {args$y/72})" fill="black">{args$str}</text>'),
+    sep = "\n"
+  )
+  state
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Call a different function to match each of the device calls we handle.
+# Always return the state
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+svg_callback <- function(device_call, args, state) {
+  switch(
+    device_call,
+    "open"         = svg_open      (args, state),
+    "close"        = svg_close     (args, state),
+    "circle"       = svg_circle    (args, state),
+    "line"         = svg_line      (args, state),
+    "polyline"     = svg_polyline  (args, state),
+    "textUTF8"     = svg_text      (args, state),
+    state
+  )
+}
+```
+
+
+## Example plot 
+
+```{r}
+rdevice("svg_callback", filename = "svg/test-draw.svg") 
+ggplot(mtcars) + geom_point(aes(mpg, wt))
+invisible(dev.off())
+```
+
+
+
+View the SVG text output
+
+```{r}
+cat(paste(readLines("svg/test-draw.svg"), collapse = "\n"))
+```
+
+Open the output in an SVG viewer
+
+```{r}
+txt <- readLines("svg/test-draw.svg")
+htmltools::HTML(txt)
+```
+
+
+
+# Next steps
+
+This plot output doesn't look that great because we cut a lot of corners to get here; this includes:
+
+* no clipping support
+* no support for different colours for lines, points or filling. If you review
+  the code you'll see that all line strokes are set to black, and only
+  circles are filled.
+* since `strWidth` and `metricInfo` aren't supported yet, the drawing system
+  really doesn't know how to position the fonts well, or how to leave space for them
+  near other objects.
+  
+
+
+
+
+
+
+
+

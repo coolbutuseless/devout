@@ -1,37 +1,71 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# devout - non-standard devices for graphical output from R
+# devout <img src="man/figures/logo.png" align="right" height=230/>
 
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-![](https://img.shields.io/badge/Status-alpha-orange.svg)
-<!-- badges: end -->
+![](http://img.shields.io/badge/dev-out-blue.svg) <!-- badges: end -->
 
-`devout` is a package for some of some non-standard devices for R.
+`devout` is a package that enables R graphics devices to be written in
+plain R.
 
-A graphics device (e.g. `png()`, `pdf()`) is an interface to which R
-passes plotting instructions. The graphics device then stores these in
-the appropriate format for the given filetype.
+`devout` uses a pseudo-graphics-device which translates graphics calls
+into a call to an R function of your design.
 
-However, there is no requirement that the output is saved to a file, nor
-is there any requirement that the output is saved as a graphic.
+This means we can create alternative output devices (like `pdf()` or
+`png()`) using only plain R.
+
+## How normal (C/C++) graphics devices work
+
+<details open>
+
+<summary> <span title='animation'> animation (click to close) </summary>
+<img src="man/figures/graffle/graphics-device/animo.gif" />
+
+</details>
+
+## How the devout device enables plain R graphics devices
+
+<details open>
+
+<summary> <span title='animation'> animation (click to close) </summary>
+<img src="man/figures/graffle/devout-device/animo.gif" />
+
+</details>
 
 ## What’s in the box
 
-  - `ascii()` - a non-standard device which outputs an ascii
-    representation of the plot to a file, or to the console or terminal
-  - `descriptive()` - a non-standard output device that describes what
-    the output looks like
+  - `rdevice()` - a generic device wrapper which will call the given R
+    function to handle the graphics drawing.
+  - Two example devices written in plain R (but using the underlying
+    `rdevice()`)
+      - `descriptive()` - an output device which dumps information about
+        the device calls.
+      - `ascii()` - a graphics device which outputs an ascii
+        representation of the plot to a file, or to the console/terminal
 
-## News:
+## How do I write my own graphics device?
 
-  - v0.1.0 - initial release
-  - v0.1.1
-      - Added support for path objects, so more map plots now work.
-      - More example plots - `sf`, `pie`, `igraph`
-  - v0.1.2 - Added support for multiple page output
+If you want to write your own graphics device in plain R using `devout`
+you can:
+
+1.  Read the `R/ascii-callback.R` included in the package
+2.  Read the vignettes.
+
+A series of 4 vignettes are included in this package. They walk through
+the process of writing a naive SVG graphics device.
+
+  - [Creating an SVG device - part 1 - The Callback
+    Function](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-01.html)
+  - [Creating an SVG device - part 2 - The Drawing
+    Canvas](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-02.html)
+  - [Creating an SVG device - part 3 - Rendering
+    Graphics](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-03.html)
+  - [Creating an SVG device - part 4 - %\#$^ you I won’t do what you
+    tell
+    me](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-04.html)
 
 ## Installation
 
@@ -43,11 +77,103 @@ with:
 remotes::install_github("coolbutuseless/devout")
 ```
 
-## `ascii()` device
+# Simple device written in plain R: `debug` device
+
+The following 5 lines of code are about the simplest device you can
+write with `devout` in plain R.
+
+This devices prints each of the device calls that were generated when
+the plot was
+“drawn”.
+
+``` r
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Write a function which takes 3 arguments
+# @param device_call name of device function call
+# @param args the arguments to that device call
+# @param state current state of the graphics device
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+debug_function <- function(device_call, args, state) {
+  if (device_call %in% c('mode', 'strWidthUTF8', 'metricInfo')) return()
+  cat("[", device_call, "]: ")
+  cat(paste(names(args), args, sep = " = ", collapse = ",  "), "\n", sep = "")
+}
+```
+
+``` r
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Call the 'rdevice' and tell it that all calls should be passed to 
+# the above 'debug_function'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rdevice('debug_function') 
+plot(1:10)
+invisible(dev.off())
+```
+
+    [ open ]: 
+    [ activate ]: 
+
+    [ holdflush ]: level = 1
+
+    [ newPage ]: 
+    [ clip ]: x0 = 59.04,  y0 = 21526.56,  x1 = 28769.76,  y1 = 59.0400000000009
+    [ circle ]: x = 1122.4,  y = 20731.4666666667,  r = 2.7
+    [ circle ]: x = 4076.17777777778,  y = 18522.8740740741,  r = 2.7
+    [ circle ]: x = 7029.95555555556,  y = 16314.2814814815,  r = 2.7
+    [ circle ]: x = 9983.73333333334,  y = 14105.6888888889,  r = 2.7
+    [ circle ]: x = 12937.5111111111,  y = 11897.0962962963,  r = 2.7
+    [ circle ]: x = 15891.2888888889,  y = 9688.5037037037,  r = 2.7
+    [ circle ]: x = 18845.0666666667,  y = 7479.91111111111,  r = 2.7
+    [ circle ]: x = 21798.8444444444,  y = 5271.31851851852,  r = 2.7
+    [ circle ]: x = 24752.6222222222,  y = 3062.72592592592,  r = 2.7
+    [ circle ]: x = 27706.4,  y = 854.133333333331,  r = 2.7
+    [ clip ]: x0 = 0,  y0 = 21600,  x1 = 28800,  y1 = 0
+    [ line ]: x1 = 4076.17777777778,  y1 = 21526.56,  x2 = 27706.4,  y2 = 21526.56
+    [ line ]: x1 = 4076.17777777778,  y1 = 21526.56,  x2 = 4076.17777777778,  y2 = 21533.76
+    [ line ]: x1 = 9983.73333333334,  y1 = 21526.56,  x2 = 9983.73333333334,  y2 = 21533.76
+    [ line ]: x1 = 15891.2888888889,  y1 = 21526.56,  x2 = 15891.2888888889,  y2 = 21533.76
+    [ line ]: x1 = 21798.8444444444,  y1 = 21526.56,  x2 = 21798.8444444444,  y2 = 21533.76
+    [ line ]: x1 = 27706.4,  y1 = 21526.56,  x2 = 27706.4,  y2 = 21533.76
+    [ textUTF8 ]: x = 4058.17777777778,  y = 21552.48,  str = 2,  rot = 0,  hadj = 0
+    [ textUTF8 ]: x = 9965.73333333334,  y = 21552.48,  str = 4,  rot = 0,  hadj = 0
+    [ textUTF8 ]: x = 15873.2888888889,  y = 21552.48,  str = 6,  rot = 0,  hadj = 0
+    [ textUTF8 ]: x = 21780.8444444444,  y = 21552.48,  str = 8,  rot = 0,  hadj = 0
+    [ textUTF8 ]: x = 27682.4,  y = 21552.48,  str = 10,  rot = 0,  hadj = 0
+    [ line ]: x1 = 59.04,  y1 = 18522.8740740741,  x2 = 59.04,  y2 = 854.133333333331
+    [ line ]: x1 = 59.04,  y1 = 18522.8740740741,  x2 = 51.84,  y2 = 18522.8740740741
+    [ line ]: x1 = 59.04,  y1 = 14105.6888888889,  x2 = 51.84,  y2 = 14105.6888888889
+    [ line ]: x1 = 59.04,  y1 = 9688.5037037037,  x2 = 51.84,  y2 = 9688.5037037037
+    [ line ]: x1 = 59.04,  y1 = 5271.31851851852,  x2 = 51.84,  y2 = 5271.31851851852
+    [ line ]: x1 = 59.04,  y1 = 854.133333333331,  x2 = 51.84,  y2 = 854.133333333331
+    [ textUTF8 ]: x = 41.76,  y = 18540.8740740741,  str = 2,  rot = 90,  hadj = 0
+    [ textUTF8 ]: x = 41.76,  y = 14123.6888888889,  str = 4,  rot = 90,  hadj = 0
+    [ textUTF8 ]: x = 41.76,  y = 9706.5037037037,  str = 6,  rot = 90,  hadj = 0
+    [ textUTF8 ]: x = 41.76,  y = 5289.31851851852,  str = 8,  rot = 90,  hadj = 0
+    [ textUTF8 ]: x = 41.76,  y = 878.133333333331,  str = 10,  rot = 90,  hadj = 0
+    [ polyline ]: n = 5,  x = c(59.04, 28769.76, 28769.76, 59.04, 59.04),  y = c(21526.56, 21526.56, 59.0400000000009, 59.0400000000009, 21526.56)
+    [ clip ]: x0 = 0,  y0 = 21600,  x1 = 28800,  y1 = 0
+    [ textUTF8 ]: x = 14372.4,  y = 21581.28,  str = Index,  rot = 0,  hadj = 0
+    [ textUTF8 ]: x = 12.96,  y = 10828.8,  str = 1:10,  rot = 90,  hadj = 0
+    [ holdflush ]: level = -1
+
+    [ close ]: 
+
+# `ascii()` device
+
+This is an example of a more complete graphics device. It is written in
+plain R and relies on `devout` for all the interfacing with C++ and the
+internals of R.
 
 The `ascii()` device draws an approximation of the graphics using ASCII
 characters on the console (by default) or saved to a text file (if
 specified).
+
+Limitations
+
+  - No support for: filled polygons, plotmath, alpha blending, angled
+    text, rasters
+  - You should probably always add `theme(legend.position = 'none')`
+    because legends look awful in ascii.
 
 ### `ggplot2`: Basic scatterplot
 
@@ -70,78 +196,72 @@ invisible(dev.off())
     Basic scatter plot                                                                              
     Rendered with devout::ascii()                                                                   
     +----------------------------------------------------------------------------------------------+
-    |  .#       .       #.        .         .        .        .        .         .        .        |
-    |  .        .        .        .         .        .        .        .         .        .        |
- C5 O..............................................................................................|
- a  |  .        .        .        .         .        .        .        .         .        .        |
- r  |..............................................................................................|
-    |  .        .        .        .         .        .        .        .         .        .        |
- W  O.........................#....................................................................|
- e4 |  .        .  #     .        .      #  .        .        .        .         .        .        |
- i  |  .        .        .#       #         .        .        .        .         .        .        |
- g  |.................#..###.......#.#.#.#.........................................................|
- h  |  .        .        .  #     .         .    #   .      # .        .         .        .        |
- t  O.................................................#............................................|
-  3 |  .        .        .        .       # .  # #   .        .        .         .        .        |
-    |  .        .        .        .         .  #     .        .        .         .        .        |
-    |............................................#.................................................|
-    |  .        .        .        .         .        .#       .   #    .         .        #        |
-  2 O..................................................................#...........................|
-    |  .        .        .        .         .        .        .        .         .        .    #   |
-    |  .        .        .        .         .        .        .        .         .#       .        |
-    +--O-----------------O------------------O-----------------O------------------O-----------------O
-     10                 15                20                 25                30                 3 
-                                                  mpg                                               
+    |  .#       .       #.        .        .         .        .        .        .        .         |
+    O..............................................................................................|
+  5 |  .        .        .        .        .         .        .        .        .        .         |
+    |  .        .        .        .        .         .        .        .        .        .         |
+    |..............................................................................................|
+    |  .        .        .        .        .         .        .        .        .        .         |
+C 4 O.........................#....................................................................|
+a   |  .        .  #     .#       #      # .         .        .        .        .        .         |
+r   |..................#.#.#.......................................................................|
+    |  .        .        .#       .##  # # .         .        .        .        .        .         |
+W   |  .        .        .  #     .        .     #   .#     # .        .        .        .         |
+e 3 O..........................................#...................................................|
+i   |  .        .        .        .       #.   # #   .        .        .        .        .         |
+g   |............................................#.................................................|
+h   |  .        .        .        .        .         .#       .        .        .        #         |
+t   O.............................................................#................................|
+  2 |  .        .        .        .        .         .        .       #.        .        .     #   |
+    |  .        .        .        .        .         .        .        .        . #      .         |
+    |.............................................................................#................|
+    +10O----------------15----------------20----------------25O----------------30----------------35O
+                                                 mpg                                                
+                                                                                                     
 ```
 
-### `ggplot2` Facetted Histogram with a `fill` aesthetic
+### `pie` plot in base R
 
 ``` r
-p <- ggplot(mtcars) + 
-  theme_bw()  +
-  geom_histogram(aes(wt, fill = cyl), bins = 5, colour = 'black') +
-  labs(title = "Facetted Histogram with 'fill' Aesthetic", 
-    subtitle = "Rendered with devout::ascii()") + 
-  facet_wrap(~cyl, labeller = label_both) +
-  theme(
-    panel.grid = element_blank(),
-    legend.position = 'none'
-  )
-
-ascii(width = 100)
-p
+ascii(width = 100) 
+pie(c(cool = 4, but = 2, use = 1, less = 8))
 invisible(dev.off())
 ```
 
 ``` 
-       Facetted Histogram with 'fill' Aesthetic                                                     
-       Rendered with devout::ascii()                                                                
-       +---------- cyl: 4 ------------+---------- cyl: 6 -----------++--------- cyl: 8 ------------+
-       +------------------------------+-----------------------------++-----------------------------+
-  10.0 O                              |                             ||           +-----+           |
-       |                              |                             ||           |-----|           |
-       |                              |                             ||           |-----|           |
-       |                              |                             ||           |-----|           |
-   7.5 O                              |                             ||           |-----|           |
- c     |+-----+                       |                             ||           |-----|           |
- o     ||-----|                       |                             ||           |-----|           |
- u     ||-----|                       |                             ||           |-----|           |
- n     ||-----|                       |                             ||           |-----|           |
- t 5.0 O|-----|                       |                             ||           |-----|           |
-       ||-----+----+                  |      +----+                 ||           |-----|           |
-       ||-----|----|                  |      |oooo|                 ||           |-----|           |
-       ||-----|----|                  |      |oooo+-----+           ||           |-----|           |
-   2.5 O|-----|----|                  |      |oooo|ooooo|           ||           |-----|           |
-       ||-----|----|                  |      |oooo|ooooo|           ||           |-----+----+      |
-       ||-----|----|                  |      |oooo|ooooo|           ||           |-----|----|      |
-       ||-----|----|                  |      |oooo|ooooo|           ||      +----|-----|----+-----+|
-       ||-----|----|                  |      |oooo|ooooo|           ||      |----|-----|----|-----||
-   0.0 O---O-----O-----O----O-----O---+---O-----O-----O----O-----O--++---O-----O-----O----O-----O--+
-          2     3     4    5     6       2     3     4    5     6       2     3     4    5     6    
-                                                    wt                                              
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                   but     ##############                                           
+                                       ####    #         ####  cool                                 
+                                    ###        #             ###                                    
+                                  ##            #               ##                                  
+                          use    ## ###         #                ##                                 
+                               ##      ###      #                  #                                
+                               #          ###    #                  #                               
+                               #########     ### #                  #                               
+                              #         ##############################                              
+                              #                                     #                               
+                               #                                    #                               
+                               ##                                  ##                               
+                                ##                                ##                                
+                                 ##                              ##                                 
+                                  ###                          ###                                  
+                                    ####                    ####                                    
+                                       #####            #####                                       
+                                            #############                                           
+                                          less                                                      
+                                                                                                    
+                                                                                                    
+                                                                                                     
 ```
 
-### `geom_sf` map of the Gulf of Mexico
+### `geom_sf()` map of the Gulf of Mexico
+
+<details closed>
+
+<summary> <span title='Simple features example'> geom\_sf() example
+(click to open) </summary>
 
   - Example taken from the [r-spatial
     website](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
@@ -172,306 +292,23 @@ invisible(dev.off())
 
 <img src = "man/figures/gulfofmexico.png">
 
-### `tmap` world map
+</details>
 
-  - Thanks to [Barry Rowlingson](https://twitter.com/geospacedman) for
-    pointing out that basic mapping didn’t work in v0.1.0 and posting an
-    example
+<br />
 
-<!-- end list -->
+## Ideas for other Output Devices
 
-``` r
-library(tmap)
-data(World)
-
-ascii(verbosity = 0, width = 200)
-tm_shape(World, projection = 'longlat') + 
-  tm_polygons() +
-  tm_layout("Long lat coordinates (WGS84)", inner.margins=c(0,0,.1,0))
-invisible(dev.off())
-```
-
-<img src = "man/figures/tmap.png">
-
-### `treemap`
-
-``` r
-library(treemap)
-
-ascii(width = 100)
-mtcars %>% 
-  tibble::rownames_to_column() %>% 
-  head(10) %>% 
-  treemap(index = 'rowname', vSize = 'disp', palette = c('#ffffff'))
-invisible(dev.off())
-```
-
-    +---------------------------------+----------------------+---------------------+-------------------+
-    |                                 |                      |                     |                   |
-    |                                 |                      |                     |                   |
-    |                                 |                      |                     |                   |
-    |                                 |                      |                     |                   |
-    |                                 |                      |     Merc 280        |  Mazda RX4 Wag    |
-    |          Duster 360             |                      |                     |                   |
-    |                                 |   Hornet 4 Drive     |                     |                   |
-    |                                 |                      |                     |                   |
-    |                                 |                      +---------------------++------------------+
-    |                                 |                      |                      |                  |
-    |                                 |                      |                      |                  |
-    +---------------------------------+                      |                      |                  |
-    |                                 +----------------------+      Mazda RX4       |                  |
-    |                                 |                      |                      |    Merc 230      |
-    |                                 |                      |                      |                  |
-    |                                 |                      |                      |                  |
-    |                                 |                      |----------------------+                  |
-    |                                 |                      |                      |------------------+
-    |       Hornet Sportabout         |       Valiant        |                      |                  |
-    |                                 |                      |                      |                  |
-    |                                 |                      |      Merc 240D       |   Datsun 710     |
-    |                                 |                      |                      |                  |
-    |                                 |                      |                      |                  |
-    +---------------------------------+----------------------+----------------------+------------------+
-
-### `igraph` network plot
-
-``` r
-library(igraph)
-
-ascii(width = 100)
-igraph::random.graph.game(6, 0.4) %>% 
-  plot(vertex.shape = 'none')
-invisible(dev.off())
-```
-
-``` 
-                                                                                                    
-                           1                                                                        
-                             ++                                                                     
-                               ++                                                                   
-                                 ++                                                                 
-                                   ++                                 3                             
-                                     ++                              ++                             
-                                       ++                          ++                               
-                                        5  +++                   ++                                 
-                                          +   ++++            +++                                   
-                                           +      +++++     ++                                      
-                                           +            6 ++                                        
-                                            +           ++                                          
-                                             +         + +                                          
-                                             +       ++  +                                          
-                                              +     +    +                                          
-                                               +  ++     +                                          
-                                               2 +       +                                          
-                                                 +        +                                         
-                                                  ++      +                                         
-                                                    ++    +                                         
-                                                      ++  +                                         
-                                                        +++                                         
-                                                         4                                          
-                                                                                                    
-```
-
-### `pie` plot in base R
-
-``` r
-ascii(width = 100) 
-pie(c(cool = 4, but = 2, use = 1, less = 8))
-invisible(dev.off())
-```
-
-``` 
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                   but     ##############                                           
-                                       ####     #        ####  cool                                 
-                                     ###        #           ###                                     
-                                   ##            #             ##                                   
-                                  ###            #               ##                                 
-                           use  ##   ###         #                #                                 
-                                #       ##       #                 #                                
-                               ######     ###    #                 ##                               
-                               #     ###########  #                 #                               
-                               #               ######################                               
-                               #                                    #                               
-                               ##                                  ##                               
-                                #                                  #                                
-                                 #                                #                                 
-                                  ##                            ##                                  
-                                   ##                          ##                                   
-                                     ###                     ##                                     
-                                       ####              ####                                       
-                                           ###############                                          
-                                          less  #                                                   
-                                                                                                    
-                                                                                                    
-```
-
-## Creating animations using `gganimate` and `asciicast`
-
-  - This uses the [asciicast
-    package](https://github.com/coolbutuseless/asciicast) for creating
-    an animation in the `asciicast` format as used by
-    [asciinema](http://asciinema.org)
-  - The code example for gganimate is taken from [gganimate
-    docs](https://gganimate.com/articles/gganimate.html)
-  - Because `gganimate` currently only supports some devices we need to
-    do a bit more manual work to setup the animation and to manually
-    feed the frames to a renderer.
-
-<!-- end list -->
-
-``` r
-library(ggplot2)
-library(gganimate)
-library(asciicast)
-library(devout)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# The `gganimate` object
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p <- ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
-  geom_point() + 
-  theme_bw() + 
-  transition_states(Species,
-                    transition_length = 2,
-                    state_length = 1)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Setup up a tempdir and filename for multiple outputs
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tdir <- tempdir()
-asciicast_filename <- paste0(tdir, "/gganimate-%04i.txt")
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Open an ascii device and have `gganimate` animate into it
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ascii(width = 150, filename = asciicast_filename)
-animate(p, nframes = 100, device = 'current')
-invisible(dev.off())
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Find all files that were just rendered
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-txt_files <- list.files(tdir, pattern = "\\.txt$", full.names = TRUE)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# create a flipbook
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cast <- asciicast::create_asciicast_flipbook(txt_files, filename = "out.cast", fps = 15)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# This currently won't play in Rmarkdown or in github, but it will 
-# play in the viewer in Rstudio.  
-# For this document, I have uploaded the ".cast" file to asciinema.com and 
-# linked to there.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-asciicast::play_asciicast(cast)
-```
-
-<a href="https://asciinema.org/a/244284?autoplay=1&loop=1&theme=solarized-light"><img src="https://asciinema.org/a/244284.png" width="836"/></a>
-
-#### Actual gganimate gif output for reference
-
-<img src="man/figures/example.gif" width="100%" />
-
-## `descriptive()` device
-
-The descriptive device gives a blow-by-blow account of what the graphics
-device is being asked to draw.
-
-This device is useful to use as a starting point for creating other
-graphics devices - I used it as the basis for the `ascii()` device and
-added featues as I needed them.
-
-``` r
-p <- ggplot(mtcars) + 
-  geom_point(aes(mpg, wt)) +
-  labs(title = "Rendered with devout::ascii() more text goes here") +
-  theme_void()
-
-descriptive()
-p
-```
-
-    - new page
-    - circle      ( 182.2,  216.8)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 182.2,  200.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 210.1,  236.0)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 188.4,  178.8)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 146.6,  164.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 137.3,  163.2)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  78.5,  156.2)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 234.8,  180.4)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 210.1,  183.0)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 154.4,  164.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 132.7,  164.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 111.0,  124.2)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 125.0,  145.9)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  92.5,  142.7)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  18.2,   48.9)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  18.2,   37.8)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  84.7,   42.8)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 358.6,  243.6)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 327.7,  281.0)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 381.8,  267.0)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 189.9,  226.7)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  97.1,  159.3)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  92.5,  164.8)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  63.1,  138.9)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 154.4,  138.6)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 279.7,  260.6)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 259.6,  247.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 327.7,  287.5)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 101.7,  181.7)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 162.1,  207.2)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      (  89.4,  156.2)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - circle      ( 188.4,  206.6)  radius: 1.95   col:#000000FF (#) fill:#000000FF (#) lwd:0.94 lty:0 cex:1
-    - text        'Rendered with devout::ascii() more text goes here'   (   0.0,   13.3)  rot: 0 Hadj: 0   col:#000000FF (#) fill:#000000FF (#) lwd:1.00 lty:0 cex:1 fontface:1 fontsize:13.2 fontfamily: lineheight:0.9
-
-``` r
-invisible(dev.off())
-```
-
-    - close
-
-## Limitations
-
-  - No filled polygons.
-  - No anti-aliasing.
-  - No UTF text support.
-  - No plotmath support.
-  - No angled text other than 0 or 90 degrees.
-  - No raster support.
-  - No sanity checking or safety checking of ‘filename’ string.
-  - No way to have un-filled circles.
-  - No stroke aesthetic for cicles.
-  - No real support for legends.
-      - Legends get drawn, but a colourscale (for example) doesn’t
-        really map to an ascii representation so it looks rubbish.
-      - You should probably always add `theme(legend.position = 'none')`
-        .
-  - No support for carriage returns in text.
-
-## Ideas for other Non-Standard Device
-
-  - ANSI graphics
   - Colour ASCII/ANSI output
-  - audio + midi output
+  - Audio output
   - HPGL plotting output
   - [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine
     tooling instructions
   - Directly drive motors to power an etch-a-sketch
-  - Crochet, cross-stitch and knitting patterns
-  - Capture each call and turn it back into R code as a sequence of
-    `grid` calls
-  - Save drawing instructions as a CSV file
 
-## References:
+## News:
 
-  - [svglite source code](https://github.com/r-lib/svglite)
-  - [thomasp85’s](https://twitter.com/thomasp85) [devoid
-    package](https://github.com/r-lib/devoid)
-  - The defunct `RGraphicsDevice` project
-      - <http://www.omegahat.net/RGraphicsDevice/>
-      - <http://www.omegahat.net/RGraphicsDevice/overview.html>
+  - v0.2.0 - Major refactor. `devout` is now a way of writing graphics
+    devices in plain R with the `ascii()` device as an example.
+  - v0.1.2 - Added support for multiple page output
+  - v0.1.1 - Added support for path objects, so more map plots now work.
+  - v0.1.0 - initial release
