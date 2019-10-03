@@ -68,6 +68,7 @@ image_read("man/figures/logo.png")
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 ![](http://img.shields.io/badge/dev-out-blue.svg)
+[![Travis build status](https://travis-ci.org/coolbutuseless/devout.svg?branch=master)](https://travis-ci.org/coolbutuseless/devout)
 <!-- badges: end -->
 
 

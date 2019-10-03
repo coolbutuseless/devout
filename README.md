@@ -6,7 +6,9 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-![](http://img.shields.io/badge/dev-out-blue.svg) <!-- badges: end -->
+![](http://img.shields.io/badge/dev-out-blue.svg) [![Travis build
+status](https://travis-ci.org/coolbutuseless/devout.svg?branch=master)](https://travis-ci.org/coolbutuseless/devout)
+<!-- badges: end -->
 
 `devout` is a package that enables R graphics devices to be written in
 plain R.

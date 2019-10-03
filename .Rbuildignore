@@ -6,3 +6,4 @@
 ^.*\.txt$
 ^data-raw$
 ^pkgdown$
+^\.travis\.yml$
