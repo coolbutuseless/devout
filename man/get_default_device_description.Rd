@@ -4,8 +4,7 @@
 \alias{get_default_device_description}
 \title{Get the default device decription used in the rdevice}
 \usage{
-get_default_device_description(width = 100, height = 100,
-  startps = 12)
+get_default_device_description(width = 100, height = 100, startps = 12)
 }
 \arguments{
 \item{width, height}{dimensions of device}

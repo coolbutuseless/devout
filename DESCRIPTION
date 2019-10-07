@@ -1,17 +1,17 @@
 Package: devout
 Type: Package
 Title: Non-Standard Graphics Devices
-Version: 0.2.0
+Version: 0.2.1
 Date: 2019-06-04
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: A collection of non-standard graphics devices. Currently includes ascii output
-    and textual output.
+    and a device for verbose debugging output.
 License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.1)
 LinkingTo: Rcpp
 Depends: R (>= 2.10)
-RoxygenNote: 6.1.1
+RoxygenNote: 6.1.99.9001
 LazyData: true
 Suggests: 
     knitr,

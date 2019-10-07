@@ -25,6 +25,7 @@ Devices are not *required* to honour graphical parameters
 
 
 
+
 Information about the \code{device description} list (\code{dd})
 
 The structure is passed from C++ to the user callback function.

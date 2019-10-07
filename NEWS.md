@@ -1,4 +1,9 @@
 
+# devout 0.2.1
+
+* Update `devinfo$device_call` to include `rect` which was erroneously omitted in 
+  prior release.
+
 # devout 0.2.0
 
 * Major internal refactor

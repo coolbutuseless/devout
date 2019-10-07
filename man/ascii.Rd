@@ -4,8 +4,7 @@
 \alias{ascii}
 \title{Graphics device for ASCII output}
 \usage{
-ascii(filename = NULL, width = NULL, height = NULL,
-  font_aspect = 0.45, ...)
+ascii(filename = NULL, width = NULL, height = NULL, font_aspect = 0.45, ...)
 }
 \arguments{
 \item{filename}{If given, write ascii to this file, otherwise write to console.}

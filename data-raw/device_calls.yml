@@ -101,6 +101,13 @@ raster:
     height: display height [dbl]
     rot: raster rotation in degrees. positive rot = anticlockwise rotation
     interpolate: [bool]
+rect:
+  desc: Draw a rectangle
+  args:
+    x0: coord [dbl]
+    x1: coord [dbl]
+    y0: coord [dbl]
+    y1: coord [dbl]
 size:
   desc: Return information about the device size
   omittable: true
