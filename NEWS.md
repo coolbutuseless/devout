@@ -1,4 +1,8 @@
 
+# devout 0.2.2
+
+* More verbose error message for bad return value
+
 # devout 0.2.1
 
 * Update `devinfo$device_call` to include `rect` which was erroneously omitted in 

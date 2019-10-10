@@ -59,7 +59,7 @@ sanitize_return_types <- function(device_call, res) {
     list(device_call = 'strWidthUTF8'   , return_name = 'width'          , type = 'non-negative numeric'),
     list(device_call = 'newFrameConfirm', return_name = 'device_specific', type = 'logical'),
     list(device_call = 'metricInfo'     , return_name = 'ascent'         , type = 'non-negative numeric'),
-    list(device_call = 'metricInfo'     , return_name = 'descent'        , type = 'non-negative numeric'),
+    list(device_call = 'metricInfo'     , return_name = 'descent'        , type = 'numeric'),
     list(device_call = 'metricInfo'     , return_name = 'width'          , type = 'non-negative numeric'),
     list(device_call = 'locator'        , return_name = 'x'              , type = 'non-negative numeric'),
     list(device_call = 'locator'        , return_name = 'y'              , type = 'non-negative numeric'),
@@ -76,13 +76,15 @@ sanitize_return_types <- function(device_call, res) {
     if (identical(device_call, check$device_call) && (check$return_name %in% names(res))) {
       return_name <- check$return_name
       bad <- switch(check$type,
+                    'numeric'              = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.numeric(res[[return_name]])                           },
                     'non-negative numeric' = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.numeric(res[[return_name]]) || res[[return_name]] < 0 },
                     'non-negative integer' = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.integer(res[[return_name]]) || res[[return_name]] < 0 },
                     'logical'              = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.logical(res[[return_name]])                           },
                     stop("sanitize_return_types: No such check type: ", check$type)
       )
       if (bad) {
-        warning("Ignoring invalid '", check$return_name, "' returned from call to '", check$device_call,  "'. Must be ", check$type, " value")
+        warning("Ignoring invalid '", check$return_name, "' returned from call to '", check$device_call,
+                "'. Must be ", check$type, " value, but got: [", deparse(res[[return_name]]), "]")
         res[[return_name]] <- NULL
       }
     }
