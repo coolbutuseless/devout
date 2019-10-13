@@ -7,3 +7,4 @@
 ^data-raw$
 ^pkgdown$
 ^\.travis\.yml$
+^appveyor\.yml$
