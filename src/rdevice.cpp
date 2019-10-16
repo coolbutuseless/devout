@@ -456,8 +456,8 @@ void rdevice_close(pDevDesc dd) {
   // Release the SEXP object to be garbage collected.
   R_ReleaseObject(cdata->rdata);
 
-  // free the memory we had assigned
-  free(cdata);
+  // free the memory we had assigned for the cdata
+  delete(cdata);
 }
 
 
@@ -1666,8 +1666,7 @@ pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
   //--------------------------------------------------------------------------
   // Create device-specific data structure to store state info
   //--------------------------------------------------------------------------
-  cdata_struct *cdata;
-  cdata            = (cdata_struct *)calloc(1, sizeof(cdata_struct));
+  cdata_struct *cdata = new cdata_struct;
   cdata->rcallback = "rcallback";
   cdata->rfunction = rfunction;
   cdata->rdata     = rcl;
