@@ -1,11 +1,11 @@
 Package: devout
 Type: Package
-Title: Non-Standard Graphics Devices
-Version: 0.2.2
+Title: A Framework for Writing Graphics Devices in Plain R
+Version: 0.2.3
 Date: 2019-06-04
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
-Description: A collection of non-standard graphics devices. Currently includes ascii output
+Description: A Framework for Writing Graphics Devices in Plain R. Currently includes ascii output
     and a device for verbose debugging output.
 License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.1)

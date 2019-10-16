@@ -1,4 +1,8 @@
 
+# devout 0.2.3
+
+* Using `new/delete` rather than `calloc/free` to address a segmentation fault on windows.
+
 # devout 0.2.2
 
 * More verbose error message for bad return value
