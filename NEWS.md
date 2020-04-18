@@ -1,4 +1,13 @@
 
+
+# devout 0.2.4
+
+* Internal `rdata` data structure is now an environment rather than a list.
+* Change default sizing from 400x300 (pixels) to 10x8 (inches)
+* Refactored the advanced debug mechanism for `rdata`.  This was used often during 
+  initial package development, but is less used now.  To enable, set
+  `options(DEVOUT_KEEP_RDATA = TRUE)`.
+
 # devout 0.2.3
 
 * Using `new/delete` rather than `calloc/free` to address a segmentation fault on windows.

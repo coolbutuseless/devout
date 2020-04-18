@@ -1524,19 +1524,23 @@ pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
 
 
   double pointsize = 12;
-  int width  = 400;
-  int height = 300;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // If the user doesn't specify, then use this width/height (in inches)
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int width  = 10;
+  int height =  8;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Interpret the rdata as a list and see if width, height and pointsize
   // have been specified
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Rcpp::List rcl = Rcpp::clone(rdata);
+  Rcpp::Environment rcl = Rcpp::clone(rdata);
   R_PreserveObject(rcl);
 
-  if (rcl.containsElementNamed("width"    )) width      = Rcpp::as<int>(rcl["width"]);
-  if (rcl.containsElementNamed("height"   )) height     = Rcpp::as<int>(rcl["height"]);
-  if (rcl.containsElementNamed("pointsize")) pointsize  = Rcpp::as<double>(rcl["pointsize"]);
+  if (rcl.exists("width"    )) width      = Rcpp::as<int>(rcl["width"]);
+  if (rcl.exists("height"   )) height     = Rcpp::as<int>(rcl["height"]);
+  if (rcl.exists("pointsize")) pointsize  = Rcpp::as<double>(rcl["pointsize"]);
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

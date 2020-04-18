@@ -1,8 +1,7 @@
 Package: devout
 Type: Package
 Title: A Framework for Writing Graphics Devices in Plain R
-Version: 0.2.3
-Date: 2019-06-04
+Version: 0.2.4
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: A Framework for Writing Graphics Devices in Plain R. Currently includes ascii output
@@ -11,7 +10,7 @@ License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.1)
 LinkingTo: Rcpp
 Depends: R (>= 2.10)
-RoxygenNote: 6.1.99.9001
+RoxygenNote: 7.1.0
 LazyData: true
 Suggests: 
     knitr,

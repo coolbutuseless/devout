@@ -2,14 +2,15 @@
 % Please edit documentation in R/rdevice.R
 \name{rdevice}
 \alias{rdevice}
-\title{Create a rdevice graphics device}
+\title{Create an rdevice graphics device}
 \usage{
 rdevice(rfunction, ...)
 }
 \arguments{
 \item{rfunction}{character string containing name of callback function in R}
 
-\item{...}{all other named, non-NULL objects are passed into the device}
+\item{...}{all other named, non-NULL objects are passed into the device
+as `rdata`}
 }
 \description{
 Inspired by: http://www.omegahat.net/RGraphicsDevice/overview.html

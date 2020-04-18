@@ -4,12 +4,12 @@
 \alias{sanitize_return_types}
 \title{Sanitize the types of any explicit 'return' values expected by 'rdevice'}
 \usage{
-sanitize_return_types(device_call, res)
+sanitize_return_types(device_call, state)
 }
 \arguments{
 \item{device_call}{device call name}
 
-\item{res}{return list}
+\item{state}{return list}
 }
 \description{
 Sanitize the types of any explicit 'return' values expected by 'rdevice'

@@ -1,13 +1,32 @@
 
-device_rdata <- new.env()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Create a rdevice graphics device
+# For debugging purposes, it is possible to keep the rdata used for any
+# device - it is stored in an environment within the package called
+# 'device_rdata'.
+#
+# Every time a device call is made, the 'rdata' for this device is saved to this
+# environment.  Usually when the device is closed, this cached version of `rdata`
+# is deleted.
+#
+# To keep this `rdata` for a device even after it has been closed set the
+# following option:
+#    options(DEVOUT_KEEP_RDATA = TRUE)
+#
+# Note: If you do enable this option, note that the environment is never tidied,
+# so the cache of `rdata` will increase in size for every run until R restarted.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+device_rdata <- new.env()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Create an rdevice graphics device
 #'
 #' Inspired by: http://www.omegahat.net/RGraphicsDevice/overview.html
 #'
 #' @param rfunction character string containing name of callback function in R
 #' @param ... all other named, non-NULL objects are passed into the device
+#'            as `rdata`
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rdevice <- function(rfunction, ...) {
 
@@ -22,20 +41,21 @@ rdevice <- function(rfunction, ...) {
     valid_values <- vapply(varargs, Negate(is.null), logical(1))
     valid_names <- which(!is.na(varnames) & (varnames != ""))
     rdata <- varargs[valid_names & valid_values]
+    rdata <- as.environment(rdata)
   } else {
-    rdata <- list()
+    rdata <- new.env()
   }
 
   rdata$pointsize <- rdata$pointsize %||% 12
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Generate a time code to use as the unique key for the data for
-  # this instance of the device
+  # this instance of the device.  If `DEVOUT_KEEP_RDATA` option is set to
+  # TRUE then `rdata` will be cached in `devout:::device_rdata` to aid
+  # with debugging
+  # Set options(DEVOUT_KEEP_RDATA = TRUE) to use.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  op <- options(digits.secs = 6)
-  rdata$.key <- gsub("\\s+", "-", as.character(Sys.time()))
-  options(op)
-
+  rdata$.key <- strftime(Sys.time(), format = "%FT%H:%M:%OS6")
 
   invisible(
     .Call(`_devout_rdevice_`, rfunction, rdata)
@@ -50,9 +70,9 @@ rdevice <- function(rfunction, ...) {
 #' Sanitize the types of any explicit 'return' values expected by 'rdevice'
 #'
 #' @param device_call device call name
-#' @param res return list
+#' @param state return list
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sanitize_return_types <- function(device_call, res) {
+sanitize_return_types <- function(device_call, state) {
 
   checks <- list(
     list(device_call = 'strWidth'       , return_name = 'width'          , type = 'non-negative numeric'),
@@ -73,19 +93,19 @@ sanitize_return_types <- function(device_call, res) {
 
   for (check in checks) {
 
-    if (identical(device_call, check$device_call) && (check$return_name %in% names(res))) {
+    if (identical(device_call, check$device_call) && (check$return_name %in% names(state))) {
       return_name <- check$return_name
       bad <- switch(check$type,
-                    'numeric'              = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.numeric(res[[return_name]])                           },
-                    'non-negative numeric' = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.numeric(res[[return_name]]) || res[[return_name]] < 0 },
-                    'non-negative integer' = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.integer(res[[return_name]]) || res[[return_name]] < 0 },
-                    'logical'              = { is.null(res[[return_name]]) || is.na(res[[return_name]]) || !is.logical(res[[return_name]])                           },
+                    'numeric'              = { is.null(state[[return_name]]) || is.na(state[[return_name]]) || !is.numeric(state[[return_name]])                           },
+                    'non-negative numeric' = { is.null(state[[return_name]]) || is.na(state[[return_name]]) || !is.numeric(state[[return_name]]) || state[[return_name]] < 0 },
+                    'non-negative integer' = { is.null(state[[return_name]]) || is.na(state[[return_name]]) || !is.integer(state[[return_name]]) || state[[return_name]] < 0 },
+                    'logical'              = { is.null(state[[return_name]]) || is.na(state[[return_name]]) || !is.logical(state[[return_name]])                           },
                     stop("sanitize_return_types: No such check type: ", check$type)
       )
       if (bad) {
         warning("Ignoring invalid '", check$return_name, "' returned from call to '", check$device_call,
-                "'. Must be ", check$type, " value, but got: [", deparse(res[[return_name]]), "]")
-        res[[return_name]] <- NULL
+                "'. Must be ", check$type, " value, but got: [", deparse(state[[return_name]]), "]")
+        state[[return_name]] <- NULL
       }
     }
 
@@ -97,18 +117,18 @@ sanitize_return_types <- function(device_call, res) {
   # It should be an integer matrix
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (identical(device_call, 'cap')) {
-    if (('contents' %in% names(res)) &&
-        (is.null(res$contents)             ||
-         is.na(res$contents)               ||
-         class(res$contents) != 'matrix'   ||
-         typeof(res$contents) != 'integer' ||
-         anyNA(res$contents))) {
+    if (('contents' %in% names(state)) &&
+        (is.null(state$contents)             ||
+         is.na(state$contents)               ||
+         class(state$contents) != 'matrix'   ||
+         typeof(state$contents) != 'integer' ||
+         anyNA(state$contents))) {
       warning("Ignoring invalid 'contents' returned from call to 'cap'. Must be integer matrix")
-      res$contents <- NULL
+      state$contents <- NULL
     }
   }
 
-  res
+  state
 }
 
 
@@ -154,50 +174,54 @@ rcallback <- function(rfunction, device_call, state, args) {
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # On the first call from C++ code, we should have rdata$.key and the
-  # initial data transfer
+  # initial data transfer. Cache 'rdata' here
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   key <- state$rdata$.key
 
   if (device_call == 'open') {
-    # cat("key: ", key, "\n")
     device_rdata[[key]] <- state$rdata
+  } else {
+    state$rdata <- device_rdata[[key]]
   }
-
-  state$rdata <- device_rdata[[key]]
-
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Call the function
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  res <- func(device_call = device_call, args = args, state = state)
+  state <- func(device_call = device_call, args = args, state = state)
 
-  if (!is.null(res) && !is.list(res)) {
-    warning("rdevice: r callback should return a list")
-    res <- list()
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Sanity check we got a list back, and complain if we didn't.
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (!is.null(state) && !is.list(state)) {
+    warning("rdevice: r callback should return a list from call to ", shQuote(device_call))
+    state <- list()
   }
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Cache the value of the devices 'rdata'
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if ('rdata' %in% names(res)) {
-    device_rdata[[key]] <- modifyList(device_rdata[[key]], res$rdata)
+  if ('rdata' %in% names(state)) {
+    device_rdata[[key]] <- modify_list(device_rdata[[key]], state$rdata)
   }
 
-
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # if we're closing the device, also delete the data
+  # if we're closing the device, also delete the rdata associated with this device,
+  # unless specificly requested by the user to keep it.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (device_call == 'close' && getOption("DEVOUT_DELETE_DATA_ON_CLOSE", TRUE)) {
-    rm(list = key, envir = device_rdata)
+  if (device_call == 'close') {
+    if (isTRUE(getOption('DEVOUT_KEEP_RDATA', FALSE))) {
+      message("devout: kept `rdata` - ls(devout:::device_rdata[['", key, "']])")
+    } else {
+      rm(list = key, envir = device_rdata)
+    }
   }
-
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # If the device call can take a return value, check that the return value
   # given by the user (if at all) is of the right type and length
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  res <- sanitize_return_types(device_call, res)
+  state <- sanitize_return_types(device_call, state)
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,16 +230,16 @@ rcallback <- function(rfunction, device_call, state, args) {
   # This avoids the situation where the user has corrupted the device description
   # and then having C++ code somehow deal with the error. Throw an error early in R!
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (!is.null(res$dd) && !identical(res$dd, state$dd)) {
-    res$dd <- sanitize_device_description(res$dd)
+  if (!is.null(state$dd) && !identical(state$dd, state$dd)) {
+    state$dd <- sanitize_device_description(state$dd)
   }
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # We **MUST** pass a list back to C++.
+  # 1000% **ABSOLUTELY** **MUST** pass a real **LIST** back to C++.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (is.list(res)) {
-    res
+  if (is.list(state)) {
+    state
   } else {
     list()
   }

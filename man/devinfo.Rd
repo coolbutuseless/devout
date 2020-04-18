@@ -4,7 +4,9 @@
 \name{devinfo}
 \alias{devinfo}
 \title{Information about the \code{graphics parameters} (\code{gc}) \code{device description} (\code{dd}) and \code{device calls}}
-\format{The \code{devinfo} object is a named list of \code{gc}, \code{dd} and \code{device_call} information.}
+\format{
+The \code{devinfo} object is a named list of \code{gc}, \code{dd} and \code{device_call} information.
+}
 \usage{
 devinfo
 }
