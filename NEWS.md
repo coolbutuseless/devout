@@ -1,4 +1,11 @@
 
+# devout 0.2.5
+
+* Removed some caching/copying that is no longer needed now that `rdata` is 
+  an environment
+* Removed the option 'DEVOUT_KEEP_RDATA'. If you need to access the cached
+  `rdata` for a current device, just view it in `devout:::device_rdata`
+  any time after opening the device and before calling `dev.off()`
 
 # devout 0.2.4
 

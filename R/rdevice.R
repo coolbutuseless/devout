@@ -1,20 +1,14 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# For debugging purposes, it is possible to keep the rdata used for any
-# device - it is stored in an environment within the package called
+# For debugging purposes, it is possible to access the rdata environment
+# used for any device - it is stored in an environment within the package called
 # 'device_rdata'.
 #
-# Every time a device call is made, the 'rdata' for this device is saved to this
-# environment.  Usually when the device is closed, this cached version of `rdata`
-# is deleted.
+# When the device is closed, its `rdata` environment is deleted.
 #
-# To keep this `rdata` for a device even after it has been closed set the
-# following option:
-#    options(DEVOUT_KEEP_RDATA = TRUE)
-#
-# Note: If you do enable this option, note that the environment is never tidied,
-# so the cache of `rdata` will increase in size for every run until R restarted.
+# This means that any time prior to "dev.off()" you can access the
+# environment within `devout::device_rdata`
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 device_rdata <- new.env()
 
@@ -49,13 +43,10 @@ rdevice <- function(rfunction, ...) {
   rdata$pointsize <- rdata$pointsize %||% 12
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Generate a time code to use as the unique key for the data for
-  # this instance of the device.  If `DEVOUT_KEEP_RDATA` option is set to
-  # TRUE then `rdata` will be cached in `devout:::device_rdata` to aid
-  # with debugging
-  # Set options(DEVOUT_KEEP_RDATA = TRUE) to use.
+  # Generate a time code to use as the unique key for the environment for
+  # this instance of the device.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  rdata$.key <- strftime(Sys.time(), format = "%FT%H:%M:%OS6")
+  rdata$.key <- paste0('rdata-', strftime(Sys.time(), format = "%FT%H:%M:%OS6"))
 
   invisible(
     .Call(`_devout_rdevice_`, rfunction, rdata)
@@ -174,7 +165,12 @@ rcallback <- function(rfunction, device_call, state, args) {
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # On the first call from C++ code, we should have rdata$.key and the
-  # initial data transfer. Cache 'rdata' here
+  # initial data transfer of the user supplied rdata environment.
+  # It is currently assumed that 'rdata' is never updated from within C++
+  # other than for the first call to "open" the device.
+  # Thus, we only need the 'key' to access the cached rdata environment.
+  # However, I can't rule out that i'll never want to have access to Rdata
+  # from within C++, so it will still be included in all calls to rcallback.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   key <- state$rdata$.key
 
@@ -187,41 +183,31 @@ rcallback <- function(rfunction, device_call, state, args) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Call the function
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  state <- func(device_call = device_call, args = args, state = state)
+  new_state <- func(device_call = device_call, args = args, state = state)
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Sanity check we got a list back, and complain if we didn't.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (!is.null(state) && !is.list(state)) {
-    warning("rdevice: r callback should return a list from call to ", shQuote(device_call))
-    state <- list()
-  }
-
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Cache the value of the devices 'rdata'
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if ('rdata' %in% names(state)) {
-    device_rdata[[key]] <- modify_list(device_rdata[[key]], state$rdata)
+  if (!is.null(new_state) && !is.list(new_state)) {
+    warning("rdevice: expecting a list to be returned by ", shQuote(device_call),
+            "but got: ", deparse(class(new_state)))
+    new_state <- list()
   }
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # if we're closing the device, also delete the rdata associated with this device,
-  # unless specificly requested by the user to keep it.
+  # if we're closing the device, also delete the reference to the rdata
+  # environment
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (device_call == 'close') {
-    if (isTRUE(getOption('DEVOUT_KEEP_RDATA', FALSE))) {
-      message("devout: kept `rdata` - ls(devout:::device_rdata[['", key, "']])")
-    } else {
-      rm(list = key, envir = device_rdata)
-    }
+    rm(list = key, envir = device_rdata)
   }
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # If the device call can take a return value, check that the return value
-  # given by the user (if at all) is of the right type and length
+  # given by the user (if at all) is of the right type and length.
+  # e.g. strWidth should return a numeric width
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  state <- sanitize_return_types(device_call, state)
+  new_state <- sanitize_return_types(device_call, new_state)
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -230,16 +216,16 @@ rcallback <- function(rfunction, device_call, state, args) {
   # This avoids the situation where the user has corrupted the device description
   # and then having C++ code somehow deal with the error. Throw an error early in R!
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (!is.null(state$dd) && !identical(state$dd, state$dd)) {
-    state$dd <- sanitize_device_description(state$dd)
+  if (!is.null(new_state$dd) && !identical(new_state$dd, state$dd)) {
+    new_state$dd <- sanitize_device_description(new_state$dd)
   }
 
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # 1000% **ABSOLUTELY** **MUST** pass a real **LIST** back to C++.
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (is.list(state)) {
-    state
+  if (is.list(new_state)) {
+    new_state
   } else {
     list()
   }
