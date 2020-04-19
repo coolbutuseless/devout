@@ -208,11 +208,16 @@ void list_to_dd(Rcpp::List dd_list, pDevDesc dd) {
 //  - rdata  - list of information for R e.g. actual plotting canvas
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 struct cdata_struct {
-  std::string rcallback;
-  std::string rfunction;
+  SEXP rfunction;
   SEXP rdata;
 };
 
+//--------------------------------------------------------------------------
+// Rcpp calls the R function "devout::rcallback()". Grab a reference to it
+// here and use it in the `rdevice_*` calls
+//--------------------------------------------------------------------------
+Rcpp::Environment pkg = Rcpp::Environment::namespace_env("devout");
+Rcpp::Function rcallback = pkg["rcallback"];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Parse return values from R back into the device description and current cdata
@@ -242,18 +247,16 @@ void handle_return_values_from_R(Rcpp::List res, pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_activate(pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "activate",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "activate",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -261,7 +264,7 @@ void rdevice_activate(pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_activate: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_activate: " + ex_str);
   }
 
 }
@@ -285,18 +288,16 @@ void rdevice_activate(pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP rdevice_cap(pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "cap",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "cap",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -304,7 +305,7 @@ SEXP rdevice_cap(pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_cap: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_cap: " + ex_str);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -344,31 +345,29 @@ SEXP rdevice_cap(pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_circle(double x, double y, double r, const pGEcontext gc, pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "circle",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "circle",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x")         = x,
-        Rcpp::Named("y")         = y,
-        Rcpp::Named("r")         = r
+        Rcpp::Named("x") = x,
+        Rcpp::Named("y") = y,
+        Rcpp::Named("r") = r
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_circle: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_circle: " + ex_str);
   }
 
 }
@@ -390,31 +389,29 @@ void rdevice_circle(double x, double y, double r, const pGEcontext gc, pDevDesc 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_clip(double x0, double x1, double y0, double y1, pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")    = "clip",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "clip",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")   = cdata->rdata,
-        Rcpp::Named("dd")      = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x0")      = x0,
-        Rcpp::Named("y0")      = y0,
-        Rcpp::Named("x1")      = x1,
-        Rcpp::Named("y1")      = y1
+        Rcpp::Named("x0") = x0,
+        Rcpp::Named("y0") = y0,
+        Rcpp::Named("x1") = x1,
+        Rcpp::Named("y1") = y1
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_clip: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_clip: " + ex_str);
   }
 
 }
@@ -431,25 +428,23 @@ void rdevice_clip(double x0, double x1, double y0, double y1, pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_close(pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "close",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "close",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
     );
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_close: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_close: " + ex_str);
   }
 
 
@@ -472,18 +467,16 @@ void rdevice_close(pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_deactivate(pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "deactivate",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "deactivate",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -491,7 +484,7 @@ void rdevice_deactivate(pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_deactivate: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_deactivate: " + ex_str);
   }
 
 }
@@ -507,28 +500,26 @@ void rdevice_deactivate(pDevDesc dd) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void rdevice_eventHelper(pDevDesc dd, int code) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "eventHelper",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "eventHelper",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("code")      = code
+        Rcpp::Named("code") = code
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_eventHelper: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_eventHelper: " + ex_str);
   }
 
 }
@@ -547,28 +538,26 @@ void rdevice_eventHelper(pDevDesc dd, int code) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int rdevice_holdflush(pDevDesc dd, int level) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "holdflush",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "holdflush",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("level")     = level
+        Rcpp::Named("level") = level
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_holdflush: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_holdflush: " + ex_str);
   }
 
 
@@ -599,32 +588,30 @@ void rdevice_line(double x1, double y1, double x2, double y2,
                   const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "line",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "line",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x1")        = x1,
-        Rcpp::Named("y1")        = y1,
-        Rcpp::Named("x2")        = x2,
-        Rcpp::Named("y2")        = y2
+        Rcpp::Named("x1") = x1,
+        Rcpp::Named("y1") = y1,
+        Rcpp::Named("x2") = x2,
+        Rcpp::Named("y2") = y2
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_line: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_line: " + ex_str);
   }
 
 }
@@ -642,18 +629,16 @@ void rdevice_line(double x1, double y1, double x2, double y2,
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Rboolean rdevice_locator(double *x, double *y, pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "locator",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "locator",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -661,7 +646,7 @@ Rboolean rdevice_locator(double *x, double *y, pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_locator: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_locator: " + ex_str);
   }
 
 
@@ -705,29 +690,27 @@ void rdevice_metricInfo(int c, const pGEcontext gc, double* ascent,
                         double* descent, double* width, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "metricInfo",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "metricInfo",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("c")         = c
+        Rcpp::Named("c") = c
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_metricInfo: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_metricInfo: " + ex_str);
   }
 
 
@@ -772,28 +755,26 @@ void rdevice_metricInfo(int c, const pGEcontext gc, double* ascent,
 void rdevice_mode(int mode, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "mode",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "mode",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("mode")      = mode
+        Rcpp::Named("mode") = mode
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_mode: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_mode: " + ex_str);
   }
 
 }
@@ -815,18 +796,16 @@ void rdevice_mode(int mode, pDevDesc dd) {
 Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "newFrameConfirm",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "newFrameConfirm",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -834,7 +813,7 @@ Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_newFrameConfirm: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_newFrameConfirm: " + ex_str);
   }
 
 
@@ -863,19 +842,17 @@ Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
 void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "newPage",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "newPage",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -883,7 +860,7 @@ void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("newPage: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("newPage: " + ex_str);
   }
 
 }
@@ -899,18 +876,16 @@ void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
 void rdevice_onExit(pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "onExit",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "onExit",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -918,7 +893,7 @@ void rdevice_onExit(pDevDesc dd) {
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("onExit: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("onExit: " + ex_str);
   }
 
 }
@@ -963,33 +938,31 @@ void rdevice_path(double *x, double *y, int npoly, int *nper,
   }
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
       Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "path",
+      Rcpp::Named("device_call") = "path",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x")         = std::vector<double>(x, x+total_coords),
-        Rcpp::Named("y")         = std::vector<double>(y, y+total_coords),
-        Rcpp::Named("npoly")     = npoly,
-        Rcpp::Named("nper")      = std::vector<int>(nper, nper+npoly),
-        Rcpp::Named("winding")   = (bool)winding
+        Rcpp::Named("x")       = std::vector<double>(x, x+total_coords),
+        Rcpp::Named("y")       = std::vector<double>(y, y+total_coords),
+        Rcpp::Named("npoly")   = npoly,
+        Rcpp::Named("nper")    = std::vector<int>(nper, nper+npoly),
+        Rcpp::Named("winding") = (bool)winding
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_path: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_path: " + ex_str);
   }
 
 }
@@ -1019,31 +992,29 @@ void rdevice_path(double *x, double *y, int npoly, int *nper,
 void rdevice_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")    = "polygon",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "polygon",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")   = cdata->rdata,
-        Rcpp::Named("gc")      = gc_to_list(gc),
-        Rcpp::Named("dd")      = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("n")       = n,
-        Rcpp::Named("x")       = std::vector<double>(x, x+n),
-        Rcpp::Named("y")       = std::vector<double>(y, y+n)
+        Rcpp::Named("n") = n,
+        Rcpp::Named("x") = std::vector<double>(x, x+n),
+        Rcpp::Named("y") = std::vector<double>(y, y+n)
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_polygon: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_polygon: " + ex_str);
   }
 
 }
@@ -1070,31 +1041,29 @@ void rdevice_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc 
 void rdevice_polyline(int n, double *x, double *y, const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "polyline",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "polyline",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("n")         = n,
-        Rcpp::Named("x")         = std::vector<double>(x, x+n),
-        Rcpp::Named("y")         = std::vector<double>(y, y+n)
+        Rcpp::Named("n") = n,
+        Rcpp::Named("x") = std::vector<double>(x, x+n),
+        Rcpp::Named("y") = std::vector<double>(y, y+n)
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("polyline: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("polyline: " + ex_str);
   }
 
 }
@@ -1123,19 +1092,17 @@ void rdevice_raster(unsigned int *raster, int w, int h,
                     const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
       Rcpp::Named("rfunction")   = cdata->rfunction,
-      Rcpp::Named("device_call")       = "raster",
+      Rcpp::Named("device_call") = "raster",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")       = cdata->rdata,
-        Rcpp::Named("gc")          = gc_to_list(gc),
-        Rcpp::Named("dd")          = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
@@ -1153,7 +1120,7 @@ void rdevice_raster(unsigned int *raster, int w, int h,
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_raster: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_raster: " + ex_str);
   }
 
 }
@@ -1177,32 +1144,30 @@ void rdevice_rect(double x0, double y0, double x1, double y1,
                   const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "rect",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "rect",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x0")        = x0,
-        Rcpp::Named("y0")        = y0,
-        Rcpp::Named("x1")        = x1,
-        Rcpp::Named("y1")        = y1
+        Rcpp::Named("x0") = x0,
+        Rcpp::Named("y0") = y0,
+        Rcpp::Named("x1") = x1,
+        Rcpp::Named("y1") = y1
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_rect: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_rect: " + ex_str);
   }
 
 }
@@ -1229,18 +1194,16 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
 
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "size",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "size",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List()
@@ -1248,7 +1211,7 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_size: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_size: " + ex_str);
   }
 
 
@@ -1300,29 +1263,27 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
 double rdevice_strWidth(const char *str, const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "strWidth",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "strWidth",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("str")       = std::string(str)
+        Rcpp::Named("str") = std::string(str)
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_strWidth: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_strWidth: " + ex_str);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1357,29 +1318,27 @@ double rdevice_strWidth(const char *str, const pGEcontext gc, pDevDesc dd) {
 double rdevice_strWidthUTF8(const char *str, const pGEcontext gc, pDevDesc dd) {
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "strWidthUTF8",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "strWidthUTF8",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("str")       = std::string(str)
+        Rcpp::Named("str") = std::string(str)
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_strWidthUTF8: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_strWidthUTF8: " + ex_str);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1415,33 +1374,31 @@ void rdevice_text(double x, double y, const char *str, double rot,
 
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "text",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "text",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x")         = x,
-        Rcpp::Named("y")         = y,
-        Rcpp::Named("str")       = std::string(str),
-        Rcpp::Named("rot")       = rot,
-        Rcpp::Named("hadj")      = hadj
+        Rcpp::Named("x")    = x,
+        Rcpp::Named("y")    = y,
+        Rcpp::Named("str")  = std::string(str),
+        Rcpp::Named("rot")  = rot,
+        Rcpp::Named("hadj") = hadj
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("text: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("text: " + ex_str);
   }
 }
 
@@ -1473,33 +1430,31 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
 
 
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback = package_env[cdata->rcallback];
   Rcpp::List res;
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
-      Rcpp::Named("device_call")     = "textUTF8",
+      Rcpp::Named("rfunction")   = cdata->rfunction,
+      Rcpp::Named("device_call") = "textUTF8",
 
       Rcpp::Named("state") = Rcpp::List::create(
-        Rcpp::Named("rdata")     = cdata->rdata,
-        Rcpp::Named("gc")        = gc_to_list(gc),
-        Rcpp::Named("dd")        = dd_to_list(dd)
+        Rcpp::Named("rdata") = cdata->rdata,
+        Rcpp::Named("gc")    = gc_to_list(gc),
+        Rcpp::Named("dd")    = dd_to_list(dd)
       ),
 
       Rcpp::Named("args") = Rcpp::List::create(
-        Rcpp::Named("x")         = x,
-        Rcpp::Named("y")         = y,
-        Rcpp::Named("str")       = std::string(str),
-        Rcpp::Named("rot")       = rot,
-        Rcpp::Named("hadj")      = hadj
+        Rcpp::Named("x")    = x,
+        Rcpp::Named("y")    = y,
+        Rcpp::Named("str")  = std::string(str),
+        Rcpp::Named("rot")  = rot,
+        Rcpp::Named("hadj") = hadj
       )
     );
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_textUTF8: " + cdata->rfunction + "() " + ex_str);
+    Rcpp::warning("rdevice_textUTF8: " + ex_str);
   }
 
 }
@@ -1512,7 +1467,7 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
 // - Populate it with functions to call for each of the primitive elements
 //   that need to be created
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
+pDevDesc rdevice_open(SEXP rfunction, SEXP rdata) {
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1667,11 +1622,13 @@ pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
   dd->gettingEvent    = FALSE; // [lgl] This is set while getGraphicsEvent is actively looking for events
 
 
+
+
+
   //--------------------------------------------------------------------------
   // Create device-specific data structure to store state info
   //--------------------------------------------------------------------------
   cdata_struct *cdata = new cdata_struct;
-  cdata->rcallback = "rcallback";
   cdata->rfunction = rfunction;
   cdata->rdata     = rcl;
 
@@ -1681,9 +1638,7 @@ pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
   //--------------------------------------------------------------------------
   // Give the user the opportunity to edit 'dd' before anything starts
   //--------------------------------------------------------------------------
-  Rcpp::Environment package_env("package:devout");
-  Rcpp::Function rcallback_func = package_env[cdata->rcallback];
-  Rcpp::List res = rcallback_func(
+  Rcpp::List res = rcallback(
     Rcpp::Named("rfunction") = cdata->rfunction,
     Rcpp::Named("device_call") = "open",
 
@@ -1706,7 +1661,7 @@ pDevDesc rdevice_open(std::string rfunction, SEXP rdata) {
 //
 // This function is mostly cloned from svglite/src/devSVG.cpp
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void make_rdevice_device(std::string rfunction, SEXP rdata) {
+void make_rdevice_device(SEXP rfunction, SEXP rdata) {
 
   R_GE_checkVersionOrDie(R_GE_version);
   R_CheckDeviceAvailable();
@@ -1730,7 +1685,7 @@ void make_rdevice_device(std::string rfunction, SEXP rdata) {
 //' @param rdata a list of information used on the R side
 //'
 // [[Rcpp::export]]
-bool rdevice_(std::string rfunction, SEXP rdata) {
+bool rdevice_(SEXP rfunction, SEXP rdata) {
   make_rdevice_device(rfunction, rdata);
   return true;
 }

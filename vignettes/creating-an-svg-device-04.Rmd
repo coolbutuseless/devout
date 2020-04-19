@@ -180,7 +180,7 @@ svg_polyline <- function(args, state) {
 ## Example plot 
 
 ```{r}
-rdevice("svg_callback", filename = "svg/test-experiment.svg", width=10*72, height = 6*72) 
+rdevice(svg_callback, filename = "svg/test-experiment.svg", width=10*72, height = 6*72) 
 ggplot(mtcars) + geom_point(aes(mpg, wt))
 invisible(dev.off())
 ```

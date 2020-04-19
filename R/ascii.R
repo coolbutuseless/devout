@@ -19,5 +19,5 @@
 #'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ascii <- function(filename = NULL, width = NULL, height = NULL, font_aspect = 0.45, ...) {
-  rdevice('ascii_callback', filename = filename, width = width, height = height, font_aspect = font_aspect, ...)
+  rdevice(ascii_callback, filename = filename, width = width, height = height, font_aspect = font_aspect, ...)
 }

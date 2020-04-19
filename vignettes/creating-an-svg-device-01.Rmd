@@ -79,7 +79,7 @@ The name of the callback function is given to the `devout` device, and the stand
 use would look something like the following:
 
 ```{r eval=FALSE}
-devout::rdevice("svg_callback")
+devout::rdevice(svg_callback)
 plot(1:10)
 dev.off()
 ```
@@ -106,13 +106,13 @@ svg_callback <- function(device_call, args, state) {
 
 
 ```{r eval = FALSE}
-rdevice("svg_callback", width = 1000) 
+rdevice(svg_callback, width = 1000) 
 plot(1:10)
 invisible(dev.off())
 ```
 
 ```{r echo = FALSE}
-rdevice("svg_callback", width = 1000) 
+rdevice(svg_callback, width = 1000) 
 plot(1:10)
 invisible(dev.off())
 ```

@@ -18,8 +18,10 @@ device_rdata <- new.env()
 #'
 #' Inspired by: http://www.omegahat.net/RGraphicsDevice/overview.html
 #'
-#' @param rfunction character string containing name of callback function in R
-#' @param ... all other named, non-NULL objects are passed into the device
+#' @param rfunction a function (preferred) or
+#'        a character string (soft-deprecated) containing name of callback function
+#'        which will handle the device calls.
+#' @param ... all other named, non-NULL arguments are passed into the device
 #'            as `rdata`
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rdevice <- function(rfunction, ...) {
@@ -151,33 +153,33 @@ rcallback <- function(rfunction, device_call, state, args) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test that the function exists and is callable
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (is.null(rfunction) || rfunction == '' || !exists(rfunction)) {
-    warning("rdevice: r callback not found: ", rfunction)
-    return(list())
-  }
-
-  func <- get(rfunction)
-  if (!is.function(func)) {
-    warning("rdevice: r callback is not a function: ", rfunction)
-    return(list())
-  }
-
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # On the first call from C++ code, we should have rdata$.key and the
-  # initial data transfer of the user supplied rdata environment.
-  # It is currently assumed that 'rdata' is never updated from within C++
-  # other than for the first call to "open" the device.
-  # Thus, we only need the 'key' to access the cached rdata environment.
-  # However, I can't rule out that i'll never want to have access to Rdata
-  # from within C++, so it will still be included in all calls to rcallback.
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  key <- state$rdata$.key
-
-  if (device_call == 'open') {
-    device_rdata[[key]] <- state$rdata
+  if (is.function(rfunction)) {
+    func <- rfunction
+  } else if (is.character(rfunction)) {
+    if (exists(rfunction)) {
+      func <- get(rfunction)
+      if (!is.function(func)) {
+        warning("rcallback(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
+        return(list())
+      }
+    } else {
+      warning("rcallback(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
+      return(list())
+    }
   } else {
-    state$rdata <- device_rdata[[key]]
+    warning("rcallback(): supplied device is not a function or name of a function.", call.=FALSE)
+    return(list())
+  }
+
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # `state$rdata` is an environment with all the state for the current device
+  # that is needed from the R side.  Cache the rdata object within the
+  # package `device_rdata` object to aid in debugging.
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (device_call == 'open') {
+    key <- state$rdata$.key
+    device_rdata[[key]] <- state$rdata
   }
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,6 +201,7 @@ rcallback <- function(rfunction, device_call, state, args) {
   # environment
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (device_call == 'close') {
+    key <- state$rdata$.key
     rm(list = key, envir = device_rdata)
   }
 

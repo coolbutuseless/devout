@@ -144,7 +144,7 @@ named elements of `state$rdata` and made available to the callback function.
 
 
 ```{r echo = TRUE}
-rdevice("svg_callback", filename = "svg/test-canvas.svg") 
+rdevice(svg_callback, filename = "svg/test-canvas.svg") 
 plot(1:10)
 invisible(dev.off())
 ```

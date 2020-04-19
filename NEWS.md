@@ -1,5 +1,16 @@
 
-# devout 0.2.5
+# devout 0.2.6 2020-04-20
+
+* Removed more caching/copying that is no longer needed now that `rdata` is 
+  an environment
+* `rdevice()` now accepts either a function object or character string as
+  the callback function. The character string argument is soft-deprecated, 
+  and passing in an actual function object is the preferred method.
+* The initial call from Rcpp back into R (into `devout::rcallback()`) is now 
+  done differently. This fixes some namespace issues when using devout 
+  from within another package.
+
+# devout 0.2.5 2020-04-19
 
 * Removed some caching/copying that is no longer needed now that `rdata` is 
   an environment
@@ -7,7 +18,7 @@
   `rdata` for a current device, just view it in `devout:::device_rdata`
   any time after opening the device and before calling `dev.off()`
 
-# devout 0.2.4
+# devout 0.2.4 2020-04-19
 
 * Internal `rdata` data structure is now an environment rather than a list.
 * Change default sizing from 400x300 (pixels) to 10x8 (inches)

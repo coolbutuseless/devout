@@ -543,6 +543,8 @@ ascii_text <- function(args, state) {
 #' @param device_call name of device function call
 #' @param args arguments to device function call
 #' @param state list of rdata, dd and gc. Some or all of which may be NULL
+#'
+#' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ascii_callback <- function(device_call, args, state) {
 
@@ -579,12 +581,11 @@ ascii_callback <- function(device_call, args, state) {
 
 
 if (FALSE) {
-  # rdevice('ascii_callback', list(x=1)); plot(1); dev.off()
 
   library(devout)
   library(ggplot2)
 
-  rdevice('ascii_callback', font_aspect = 0.45);
+  rdevice(ascii_callback, font_aspect = 0.45);
   p <- ggplot(mtcars) +
     geom_point(aes(mpg, wt, size = cyl)) +
     theme_bw() +

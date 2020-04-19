@@ -7,9 +7,11 @@
 rdevice(rfunction, ...)
 }
 \arguments{
-\item{rfunction}{character string containing name of callback function in R}
+\item{rfunction}{a function (preferred) or
+a character string (soft-deprecated) containing name of callback function
+which will handle the device calls.}
 
-\item{...}{all other named, non-NULL objects are passed into the device
+\item{...}{all other named, non-NULL arguments are passed into the device
 as `rdata`}
 }
 \description{

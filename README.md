@@ -108,7 +108,7 @@ debug_function <- function(device_call, args, state) {
 # Call the 'rdevice' and tell it that all calls should be passed to 
 # the above 'debug_function'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rdevice('debug_function') 
+rdevice(debug_function) 
 plot(1:10)
 invisible(dev.off())
 ```

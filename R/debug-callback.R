@@ -6,6 +6,8 @@
 #' @param device_call name of device function call
 #' @param args arguments to device function call
 #' @param state list of rdata, dd and gc. Some or all of which may be NULL
+#'
+#' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 verbose_callback <- function(device_call, args, state) {
   if (device_call %in% state$rdata$skip) return()
@@ -28,5 +30,5 @@ verbose_callback <- function(device_call, args, state) {
 #'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 verbose <- function(skip = c('mode', 'strWidthUTF8', 'metricInfo', 'clip'), ...) {
-  rdevice('verbose_callback', skip = skip, ...)
+  rdevice(verbose_callback, skip = skip, ...)
 }

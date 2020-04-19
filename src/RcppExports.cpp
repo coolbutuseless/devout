@@ -6,12 +6,12 @@
 using namespace Rcpp;
 
 // rdevice_
-bool rdevice_(std::string rfunction, SEXP rdata);
+bool rdevice_(SEXP rfunction, SEXP rdata);
 RcppExport SEXP _devout_rdevice_(SEXP rfunctionSEXP, SEXP rdataSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type rfunction(rfunctionSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type rfunction(rfunctionSEXP);
     Rcpp::traits::input_parameter< SEXP >::type rdata(rdataSEXP);
     rcpp_result_gen = Rcpp::wrap(rdevice_(rfunction, rdata));
     return rcpp_result_gen;

@@ -162,7 +162,7 @@ svg_callback <- function(device_call, args, state) {
 ## Example plot 
 
 ```{r}
-rdevice("svg_callback", filename = "svg/test-draw.svg") 
+rdevice(svg_callback, filename = "svg/test-draw.svg") 
 ggplot(mtcars) + geom_point(aes(mpg, wt))
 invisible(dev.off())
 ```
