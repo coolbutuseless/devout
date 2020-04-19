@@ -4,11 +4,9 @@
 \alias{rdevice_}
 \title{Create a rdevice graphics device}
 \usage{
-rdevice_(rfunction, rdata)
+rdevice_(rdata)
 }
 \arguments{
-\item{rfunction}{name of callback function}
-
 \item{rdata}{a list of information used on the R side}
 }
 \description{

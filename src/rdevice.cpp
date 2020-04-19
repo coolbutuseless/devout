@@ -204,11 +204,15 @@ void list_to_dd(Rcpp::List dd_list, pDevDesc dd) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Struct of information about the graphics device
-//  - rfunction - name of R function to call
 //  - rdata  - list of information for R e.g. actual plotting canvas
+//
+// 2020-04-19 This struct used to contain multiple data structures to keep
+//            track of. After recent refactoring, there's just one list of
+//            R information being retained.  So this struct can be
+//            removed once I've decided I don't need it for possible future
+//            expansion ideas.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 struct cdata_struct {
-  SEXP rfunction;
   SEXP rdata;
 };
 
@@ -251,7 +255,6 @@ void rdevice_activate(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "activate",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -292,7 +295,6 @@ SEXP rdevice_cap(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "cap",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -349,7 +351,6 @@ void rdevice_circle(double x, double y, double r, const pGEcontext gc, pDevDesc 
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "circle",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -393,7 +394,6 @@ void rdevice_clip(double x0, double x1, double y0, double y1, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "clip",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -432,7 +432,6 @@ void rdevice_close(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "close",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -471,7 +470,6 @@ void rdevice_deactivate(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "deactivate",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -504,7 +502,6 @@ void rdevice_eventHelper(pDevDesc dd, int code) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "eventHelper",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -542,7 +539,6 @@ int rdevice_holdflush(pDevDesc dd, int level) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "holdflush",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -592,7 +588,6 @@ void rdevice_line(double x1, double y1, double x2, double y2,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "line",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -633,7 +628,6 @@ Rboolean rdevice_locator(double *x, double *y, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "locator",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -694,7 +688,6 @@ void rdevice_metricInfo(int c, const pGEcontext gc, double* ascent,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "metricInfo",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -759,7 +752,6 @@ void rdevice_mode(int mode, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "mode",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -800,7 +792,6 @@ Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "newFrameConfirm",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -846,7 +837,6 @@ void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "newPage",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -880,7 +870,6 @@ void rdevice_onExit(pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "onExit",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -942,7 +931,6 @@ void rdevice_path(double *x, double *y, int npoly, int *nper,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction") = cdata->rfunction,
       Rcpp::Named("device_call") = "path",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -996,7 +984,6 @@ void rdevice_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc 
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "polygon",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1045,7 +1032,6 @@ void rdevice_polyline(int n, double *x, double *y, const pGEcontext gc, pDevDesc
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "polyline",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1096,7 +1082,6 @@ void rdevice_raster(unsigned int *raster, int w, int h,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "raster",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1148,7 +1133,6 @@ void rdevice_rect(double x0, double y0, double x1, double y1,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "rect",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1198,7 +1182,6 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "size",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1267,7 +1250,6 @@ double rdevice_strWidth(const char *str, const pGEcontext gc, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "strWidth",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1322,7 +1304,6 @@ double rdevice_strWidthUTF8(const char *str, const pGEcontext gc, pDevDesc dd) {
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "strWidthUTF8",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1378,7 +1359,6 @@ void rdevice_text(double x, double y, const char *str, double rot,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "text",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1434,7 +1414,6 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
 
   try {
     res = rcallback(
-      Rcpp::Named("rfunction")   = cdata->rfunction,
       Rcpp::Named("device_call") = "textUTF8",
 
       Rcpp::Named("state") = Rcpp::List::create(
@@ -1467,7 +1446,7 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
 // - Populate it with functions to call for each of the primitive elements
 //   that need to be created
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-pDevDesc rdevice_open(SEXP rfunction, SEXP rdata) {
+pDevDesc rdevice_open(SEXP rdata) {
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1629,8 +1608,7 @@ pDevDesc rdevice_open(SEXP rfunction, SEXP rdata) {
   // Create device-specific data structure to store state info
   //--------------------------------------------------------------------------
   cdata_struct *cdata = new cdata_struct;
-  cdata->rfunction = rfunction;
-  cdata->rdata     = rcl;
+  cdata->rdata = rcl;
 
 
   dd->deviceSpecific = cdata;
@@ -1639,7 +1617,6 @@ pDevDesc rdevice_open(SEXP rfunction, SEXP rdata) {
   // Give the user the opportunity to edit 'dd' before anything starts
   //--------------------------------------------------------------------------
   Rcpp::List res = rcallback(
-    Rcpp::Named("rfunction") = cdata->rfunction,
     Rcpp::Named("device_call") = "open",
 
     Rcpp::Named("state") = Rcpp::List::create(
@@ -1661,12 +1638,12 @@ pDevDesc rdevice_open(SEXP rfunction, SEXP rdata) {
 //
 // This function is mostly cloned from svglite/src/devSVG.cpp
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void make_rdevice_device(SEXP rfunction, SEXP rdata) {
+void make_rdevice_device(SEXP rdata) {
 
   R_GE_checkVersionOrDie(R_GE_version);
   R_CheckDeviceAvailable();
   BEGIN_SUSPEND_INTERRUPTS {
-    pDevDesc dev = rdevice_open(rfunction, rdata);
+    pDevDesc dev = rdevice_open(rdata);
     if (dev == NULL)
       Rcpp::stop("Failed to start 'rdevice' device");
 
@@ -1681,12 +1658,11 @@ void make_rdevice_device(SEXP rfunction, SEXP rdata) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //' Create a rdevice graphics device
 //'
-//' @param rfunction name of callback function
 //' @param rdata a list of information used on the R side
 //'
 // [[Rcpp::export]]
-bool rdevice_(SEXP rfunction, SEXP rdata) {
-  make_rdevice_device(rfunction, rdata);
+bool rdevice_(SEXP rdata) {
+  make_rdevice_device(rdata);
   return true;
 }
 

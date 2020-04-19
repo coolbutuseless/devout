@@ -50,8 +50,32 @@ rdevice <- function(rfunction, ...) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   rdata$.key <- paste0('rdata-', strftime(Sys.time(), format = "%FT%H:%M:%OS6"))
 
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Determine if the rdevice is valid
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (is.function(rfunction)) {
+    func <- rfunction
+  } else if (is.character(rfunction)) {
+    if (exists(rfunction)) {
+      func <- get(rfunction)
+      if (!is.function(func)) {
+        stop("rdevice(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
+      }
+    } else {
+      stop("rdevice(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
+    }
+  } else {
+    stop("rdevice(): supplied device is not a function or name of a function.", call.=FALSE)
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Add the 'rfunction' to the 'rdata'
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  rdata$rfunction <- func
+
   invisible(
-    .Call(`_devout_rdevice_`, rfunction, rdata)
+    .Call(`_devout_rdevice_`, rdata)
   )
 }
 
@@ -143,34 +167,11 @@ sanitize_return_types <- function(device_call, state) {
 #' TODO: Could then do signatures of the input state and the return values and
 #' only include them in the return object if things have changed?
 #'
-#' @param rfunction name of rfunction
 #' @param device_call name of device call
 #' @param state list of rdata, dd and gc
 #' @param args args to the device call
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rcallback <- function(rfunction, device_call, state, args) {
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Test that the function exists and is callable
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (is.function(rfunction)) {
-    func <- rfunction
-  } else if (is.character(rfunction)) {
-    if (exists(rfunction)) {
-      func <- get(rfunction)
-      if (!is.function(func)) {
-        warning("rcallback(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
-        return(list())
-      }
-    } else {
-      warning("rcallback(): Supplied character string does not reference a function: ", rfunction, call.=FALSE)
-      return(list())
-    }
-  } else {
-    warning("rcallback(): supplied device is not a function or name of a function.", call.=FALSE)
-    return(list())
-  }
-
+rcallback <- function(device_call, state, args) {
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # `state$rdata` is an environment with all the state for the current device
@@ -185,6 +186,7 @@ rcallback <- function(rfunction, device_call, state, args) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Call the function
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  func <- state$rdata$rfunction
   new_state <- func(device_call = device_call, args = args, state = state)
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

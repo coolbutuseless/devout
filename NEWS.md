@@ -1,4 +1,9 @@
 
+# devout 0.2.7 2020-04-20
+
+* Check validity of `rfunction` on initial function call to `rdevice()` and store
+  as part of `rdata` data structure.
+
 # devout 0.2.6 2020-04-20
 
 * Removed more caching/copying that is no longer needed now that `rdata` is 

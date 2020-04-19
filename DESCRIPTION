@@ -1,7 +1,7 @@
 Package: devout
 Type: Package
 Title: A Framework for Writing Graphics Devices in Plain R
-Version: 0.2.6
+Version: 0.2.7
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: A Framework for Writing Graphics Devices in Plain R. Currently includes ascii output

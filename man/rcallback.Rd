@@ -4,11 +4,9 @@
 \alias{rcallback}
 \title{Callback for the rdevice}
 \usage{
-rcallback(rfunction, device_call, state, args)
+rcallback(device_call, state, args)
 }
 \arguments{
-\item{rfunction}{name of rfunction}
-
 \item{device_call}{name of device call}
 
 \item{state}{list of rdata, dd and gc}
