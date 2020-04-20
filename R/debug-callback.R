@@ -30,5 +30,5 @@ verbose_callback <- function(device_call, args, state) {
 #'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 verbose <- function(skip = c('mode', 'strWidthUTF8', 'metricInfo', 'clip'), ...) {
-  rdevice(verbose_callback, skip = skip, ...)
+  rdevice(verbose_callback, skip = skip, ..., device_name = 'verbose')
 }

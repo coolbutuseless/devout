@@ -4,7 +4,7 @@
 \alias{rdevice}
 \title{Create an rdevice graphics device}
 \usage{
-rdevice(rfunction, ...)
+rdevice(rfunction, ..., device_name = "rdevice")
 }
 \arguments{
 \item{rfunction}{a function (preferred) or
@@ -13,6 +13,8 @@ which will handle the device calls.}
 
 \item{...}{all other named, non-NULL arguments are passed into the device
 as `rdata`}
+
+\item{device_name}{name to use for the device. default: "rdevice"}
 }
 \description{
 Inspired by: http://www.omegahat.net/RGraphicsDevice/overview.html

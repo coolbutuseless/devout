@@ -6,19 +6,20 @@
 using namespace Rcpp;
 
 // rdevice_
-bool rdevice_(SEXP rdata);
-RcppExport SEXP _devout_rdevice_(SEXP rdataSEXP) {
+bool rdevice_(SEXP rdata, std::string device_name);
+RcppExport SEXP _devout_rdevice_(SEXP rdataSEXP, SEXP device_nameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type rdata(rdataSEXP);
-    rcpp_result_gen = Rcpp::wrap(rdevice_(rdata));
+    Rcpp::traits::input_parameter< std::string >::type device_name(device_nameSEXP);
+    rcpp_result_gen = Rcpp::wrap(rdevice_(rdata, device_name));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_devout_rdevice_", (DL_FUNC) &_devout_rdevice_, 1},
+    {"_devout_rdevice_", (DL_FUNC) &_devout_rdevice_, 2},
     {NULL, NULL, 0}
 };
 

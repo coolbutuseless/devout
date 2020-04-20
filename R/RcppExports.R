@@ -4,8 +4,9 @@
 #' Create a rdevice graphics device
 #'
 #' @param rdata a list of information used on the R side
+#' @param device_name name for this device
 #'
-rdevice_ <- function(rdata) {
-    .Call(`_devout_rdevice_`, rdata)
+rdevice_ <- function(rdata, device_name) {
+    .Call(`_devout_rdevice_`, rdata, device_name)
 }
 

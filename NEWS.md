@@ -1,10 +1,15 @@
 
-# devout 0.2.7 2020-04-20
+# devout 0.2.8 2020-04-20
+
+* The name of the device can now be set by passing `device_name` 
+  argument to `rdevice()`
+
+# devout 0.2.7 2020-04-19
 
 * Check validity of `rfunction` on initial function call to `rdevice()` and store
   as part of `rdata` data structure.
 
-# devout 0.2.6 2020-04-20
+# devout 0.2.6 2020-04-19
 
 * Removed more caching/copying that is no longer needed now that `rdata` is 
   an environment
@@ -15,7 +20,7 @@
   done differently. This fixes some namespace issues when using devout 
   from within another package.
 
-# devout 0.2.5 2020-04-19
+# devout 0.2.5 2020-04-18
 
 * Removed some caching/copying that is no longer needed now that `rdata` is 
   an environment
@@ -23,7 +28,7 @@
   `rdata` for a current device, just view it in `devout:::device_rdata`
   any time after opening the device and before calling `dev.off()`
 
-# devout 0.2.4 2020-04-19
+# devout 0.2.4 2020-04-18
 
 * Internal `rdata` data structure is now an environment rather than a list.
 * Change default sizing from 400x300 (pixels) to 10x8 (inches)

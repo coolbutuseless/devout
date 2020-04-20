@@ -4,10 +4,12 @@
 \alias{rdevice_}
 \title{Create a rdevice graphics device}
 \usage{
-rdevice_(rdata)
+rdevice_(rdata, device_name)
 }
 \arguments{
 \item{rdata}{a list of information used on the R side}
+
+\item{device_name}{name for this device}
 }
 \description{
 Create a rdevice graphics device

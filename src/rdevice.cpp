@@ -1638,7 +1638,7 @@ pDevDesc rdevice_open(SEXP rdata) {
 //
 // This function is mostly cloned from svglite/src/devSVG.cpp
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void make_rdevice_device(SEXP rdata) {
+void make_rdevice_device(SEXP rdata, std::string device_name) {
 
   R_GE_checkVersionOrDie(R_GE_version);
   R_CheckDeviceAvailable();
@@ -1648,7 +1648,7 @@ void make_rdevice_device(SEXP rdata) {
       Rcpp::stop("Failed to start 'rdevice' device");
 
     pGEDevDesc dd = GEcreateDevDesc(dev);
-    GEaddDevice2(dd, "rdevice");
+    GEaddDevice2(dd, device_name.c_str());
     GEinitDisplayList(dd);
 
   } END_SUSPEND_INTERRUPTS;
@@ -1659,10 +1659,11 @@ void make_rdevice_device(SEXP rdata) {
 //' Create a rdevice graphics device
 //'
 //' @param rdata a list of information used on the R side
+//' @param device_name name for this device
 //'
 // [[Rcpp::export]]
-bool rdevice_(SEXP rdata) {
-  make_rdevice_device(rdata);
+bool rdevice_(SEXP rdata, std::string device_name) {
+  make_rdevice_device(rdata, device_name);
   return true;
 }
 

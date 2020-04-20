@@ -23,8 +23,9 @@ device_rdata <- new.env()
 #'        which will handle the device calls.
 #' @param ... all other named, non-NULL arguments are passed into the device
 #'            as `rdata`
+#' @param device_name name to use for the device. default: "rdevice"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rdevice <- function(rfunction, ...) {
+rdevice <- function(rfunction, ..., device_name = 'rdevice') {
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Add arguments from ... to the rdata
@@ -75,7 +76,7 @@ rdevice <- function(rfunction, ...) {
   rdata$rfunction <- func
 
   invisible(
-    .Call(`_devout_rdevice_`, rdata)
+    .Call(`_devout_rdevice_`, rdata, device_name)
   )
 }
 
