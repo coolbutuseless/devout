@@ -205,7 +205,11 @@ rcallback <- function(device_call, state, args) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (device_call == 'close') {
     key <- state$rdata$.key
-    rm(list = key, envir = device_rdata)
+    if (!isTRUE(getOption('RDEVICE_KEEP_RDATA', FALSE))) {
+      rm(list = key, envir = device_rdata)
+    } else {
+      message("RDEVICE_KEEP_RDATA is TRUE, so keeping Rdata in devout:::device_rdata[['", key, "']]")
+    }
   }
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -254,6 +254,7 @@ void rdevice_activate(pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "activate",
 
@@ -264,6 +265,7 @@ void rdevice_activate(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -294,6 +296,7 @@ SEXP rdevice_cap(pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "cap",
 
@@ -304,6 +307,7 @@ SEXP rdevice_cap(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -350,6 +354,7 @@ void rdevice_circle(double x, double y, double r, const pGEcontext gc, pDevDesc 
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "circle",
 
@@ -365,6 +370,7 @@ void rdevice_circle(double x, double y, double r, const pGEcontext gc, pDevDesc 
         Rcpp::Named("r") = r
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -393,6 +399,7 @@ void rdevice_clip(double x0, double x1, double y0, double y1, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "clip",
 
@@ -408,6 +415,7 @@ void rdevice_clip(double x0, double x1, double y0, double y1, pDevDesc dd) {
         Rcpp::Named("y1") = y1
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -430,7 +438,7 @@ void rdevice_close(pDevDesc dd) {
   cdata_struct *cdata = (cdata_struct *)dd->deviceSpecific;
   Rcpp::List res;
 
-  try {
+  BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "close",
 
@@ -441,10 +449,7 @@ void rdevice_close(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
-  } catch(std::exception &ex) {
-    std::string ex_str = ex.what();
-    Rcpp::warning("rdevice_close: " + ex_str);
-  }
+  } END_SUSPEND_INTERRUPTS;
 
 
   // Release the SEXP object to be garbage collected.
@@ -469,6 +474,7 @@ void rdevice_deactivate(pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "deactivate",
 
@@ -479,6 +485,7 @@ void rdevice_deactivate(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -501,6 +508,7 @@ void rdevice_eventHelper(pDevDesc dd, int code) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "eventHelper",
 
@@ -513,6 +521,7 @@ void rdevice_eventHelper(pDevDesc dd, int code) {
         Rcpp::Named("code") = code
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -538,6 +547,7 @@ int rdevice_holdflush(pDevDesc dd, int level) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "holdflush",
 
@@ -550,6 +560,7 @@ int rdevice_holdflush(pDevDesc dd, int level) {
         Rcpp::Named("level") = level
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -587,6 +598,7 @@ void rdevice_line(double x1, double y1, double x2, double y2,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "line",
 
@@ -603,6 +615,7 @@ void rdevice_line(double x1, double y1, double x2, double y2,
         Rcpp::Named("y2") = y2
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -627,6 +640,7 @@ Rboolean rdevice_locator(double *x, double *y, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "locator",
 
@@ -637,6 +651,7 @@ Rboolean rdevice_locator(double *x, double *y, pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -687,6 +702,7 @@ void rdevice_metricInfo(int c, const pGEcontext gc, double* ascent,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "metricInfo",
 
@@ -700,6 +716,7 @@ void rdevice_metricInfo(int c, const pGEcontext gc, double* ascent,
         Rcpp::Named("c") = c
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -751,6 +768,7 @@ void rdevice_mode(int mode, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "mode",
 
@@ -763,6 +781,7 @@ void rdevice_mode(int mode, pDevDesc dd) {
         Rcpp::Named("mode") = mode
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -791,6 +810,7 @@ Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "newFrameConfirm",
 
@@ -801,6 +821,7 @@ Rboolean rdevice_newFrameConfirm(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -836,6 +857,7 @@ void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "newPage",
 
@@ -847,6 +869,7 @@ void rdevice_newPage(const pGEcontext gc, pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -869,6 +892,7 @@ void rdevice_onExit(pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "onExit",
 
@@ -879,6 +903,7 @@ void rdevice_onExit(pDevDesc dd) {
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -930,6 +955,7 @@ void rdevice_path(double *x, double *y, int npoly, int *nper,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "path",
 
@@ -947,6 +973,7 @@ void rdevice_path(double *x, double *y, int npoly, int *nper,
         Rcpp::Named("winding") = (bool)winding
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -983,6 +1010,7 @@ void rdevice_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc 
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "polygon",
 
@@ -998,6 +1026,7 @@ void rdevice_polygon(int n, double *x, double *y, const pGEcontext gc, pDevDesc 
         Rcpp::Named("y") = std::vector<double>(y, y+n)
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1031,6 +1060,7 @@ void rdevice_polyline(int n, double *x, double *y, const pGEcontext gc, pDevDesc
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "polyline",
 
@@ -1046,6 +1076,7 @@ void rdevice_polyline(int n, double *x, double *y, const pGEcontext gc, pDevDesc
         Rcpp::Named("y") = std::vector<double>(y, y+n)
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1081,6 +1112,7 @@ void rdevice_raster(unsigned int *raster, int w, int h,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "raster",
 
@@ -1102,6 +1134,7 @@ void rdevice_raster(unsigned int *raster, int w, int h,
         Rcpp::Named("interpolate") = (bool)interpolate
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1132,6 +1165,7 @@ void rdevice_rect(double x0, double y0, double x1, double y1,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "rect",
 
@@ -1148,6 +1182,7 @@ void rdevice_rect(double x0, double y0, double x1, double y1,
         Rcpp::Named("y1") = y1
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1181,6 +1216,7 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "size",
 
@@ -1191,6 +1227,7 @@ void rdevice_size(double *left, double *right, double *bottom, double *top,
 
       Rcpp::Named("args") = Rcpp::List()
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1249,6 +1286,7 @@ double rdevice_strWidth(const char *str, const pGEcontext gc, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "strWidth",
 
@@ -1262,6 +1300,7 @@ double rdevice_strWidth(const char *str, const pGEcontext gc, pDevDesc dd) {
         Rcpp::Named("str") = std::string(str)
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1303,6 +1342,7 @@ double rdevice_strWidthUTF8(const char *str, const pGEcontext gc, pDevDesc dd) {
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "strWidthUTF8",
 
@@ -1316,6 +1356,7 @@ double rdevice_strWidthUTF8(const char *str, const pGEcontext gc, pDevDesc dd) {
         Rcpp::Named("str") = std::string(str)
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1358,6 +1399,7 @@ void rdevice_text(double x, double y, const char *str, double rot,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "text",
 
@@ -1375,6 +1417,7 @@ void rdevice_text(double x, double y, const char *str, double rot,
         Rcpp::Named("hadj") = hadj
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();
@@ -1413,6 +1456,7 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
   Rcpp::List res;
 
   try {
+    BEGIN_SUSPEND_INTERRUPTS {
     res = rcallback(
       Rcpp::Named("device_call") = "textUTF8",
 
@@ -1430,6 +1474,7 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
         Rcpp::Named("hadj") = hadj
       )
     );
+    } END_SUSPEND_INTERRUPTS;
     handle_return_values_from_R(res, dd);
   } catch(std::exception &ex) {
     std::string ex_str = ex.what();

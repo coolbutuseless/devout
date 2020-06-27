@@ -266,6 +266,9 @@ ascii_close <- function(args, state) {
     sink()
   }
 
+  message("sleep for 10")
+  Sys.sleep(10)
+
 
   state
 }
