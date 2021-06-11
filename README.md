@@ -6,10 +6,8 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-![](http://img.shields.io/badge/dev-out-blue.svg) [![Travis build
-status](https://travis-ci.org/coolbutuseless/devout.svg?branch=master)](https://travis-ci.org/coolbutuseless/devout)
-[![AppVeyor build
-status](https://ci.appveyor.com/api/projects/status/github/coolbutuseless/devout?branch=master&svg=true)](https://ci.appveyor.com/project/coolbutuseless/devout)
+![](http://img.shields.io/badge/dev-out-blue.svg)
+[![R-CMD-check](https://github.com/coolbutuseless/devout/workflows/R-CMD-check/badge.svg)](https://github.com/coolbutuseless/devout/actions)
 <!-- badges: end -->
 
 `devout` is a package that enables R graphics devices to be written in
