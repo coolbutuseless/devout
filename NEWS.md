@@ -1,4 +1,13 @@
 
+# devout 0.2.9 2021-06-11
+
+* Preliminary support for new features introduced in R4.1.0 
+  i.e. gradients, patterns, path clipping and masks 
+    * "preliminary support" means that devout no longer segfaults when running
+      under R4.1.0
+    * All callbacks related to these new features do nothing at all, and do
+      not yet attempt to call back into any user-defined R functions
+
 # devout 0.2.8 2020-04-20
 
 * The name of the device can now be set by passing `device_name` 

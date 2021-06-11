@@ -219,6 +219,9 @@ Limitations
 ### `ggplot2`: Basic scatterplot
 
 ```{r}
+library(ggplot2)
+library(devout)
+
 p <- ggplot(mtcars) + 
   geom_point(aes(mpg, wt)) +
   labs(
@@ -231,6 +234,7 @@ p <- ggplot(mtcars) +
 ascii(width = 100)
 p
 invisible(dev.off())
+
 ```
 
 

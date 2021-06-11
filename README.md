@@ -24,30 +24,30 @@ This means we can create alternative output devices (like `pdf()` or
 ## How normal (C/C++) graphics devices work
 
 <details open>
-
-<summary> <span title='animation'> animation (click to close) </summary>
+<summary>
+<span title='animation'> animation (click to close)
+</summary>
 <img src="man/figures/graffle/graphics-device/animo.gif" />
-
 </details>
 
 ## How the devout device enables plain R graphics devices
 
 <details open>
-
-<summary> <span title='animation'> animation (click to close) </summary>
+<summary>
+<span title='animation'> animation (click to close)
+</summary>
 <img src="man/figures/graffle/devout-device/animo.gif" />
-
 </details>
 
 ## What’s in the box
 
-  - `rdevice()` - a generic device wrapper which will call the given R
+-   `rdevice()` - a generic device wrapper which will call the given R
     function to handle the graphics drawing.
-  - Two example devices written in plain R (but using the underlying
+-   Two example devices written in plain R (but using the underlying
     `rdevice()`)
-      - `descriptive()` - an output device which dumps information about
+    -   `descriptive()` - an output device which dumps information about
         the device calls.
-      - `ascii()` - a graphics device which outputs an ascii
+    -   `ascii()` - a graphics device which outputs an ascii
         representation of the plot to a file, or to the console/terminal
 
 ## How do I write my own graphics device?
@@ -61,13 +61,13 @@ you can:
 A series of 4 vignettes are included in this package. They walk through
 the process of writing a naive SVG graphics device.
 
-  - [Creating an SVG device - part 1 - The Callback
+-   [Creating an SVG device - part 1 - The Callback
     Function](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-01.html)
-  - [Creating an SVG device - part 2 - The Drawing
+-   [Creating an SVG device - part 2 - The Drawing
     Canvas](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-02.html)
-  - [Creating an SVG device - part 3 - Rendering
+-   [Creating an SVG device - part 3 - Rendering
     Graphics](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-03.html)
-  - [Creating an SVG device - part 4 - %\#$^ you I won’t do what you
+-   [Creating an SVG device - part 4 - %\#$^ you I won’t do what you
     tell
     me](https://coolbutuseless.github.io/package/devout/articles/creating-an-svg-device-04.html)
 
@@ -153,7 +153,7 @@ invisible(dev.off())
     [ textUTF8 ]: x = 41.76,  y = 275.985185185185,  str = 6,  rot = 90,  hadj = 0
     [ textUTF8 ]: x = 41.76,  y = 184.725925925926,  str = 8,  rot = 90,  hadj = 0
     [ textUTF8 ]: x = 41.76,  y = 99.4666666666666,  str = 10,  rot = 90,  hadj = 0
-    [ polyline ]: n = 5,  x = c(59.04, 689.76, 689.76, 59.04, 59.04),  y = c(502.56, 502.56, 59.04, 59.04, 502.56)
+    [ polygon ]: n = 4,  x = c(59.04, 689.76, 689.76, 59.04),  y = c(502.56, 502.56, 59.04, 59.04)
     [ clip ]: x0 = 0,  y0 = 576,  x1 = 720,  y1 = 0
     [ textUTF8 ]: x = 332.4,  y = 557.28,  str = Index,  rot = 0,  hadj = 0
     [ textUTF8 ]: x = 12.96,  y = 316.8,  str = 1:10,  rot = 90,  hadj = 0
@@ -173,14 +173,17 @@ specified).
 
 Limitations
 
-  - No support for: filled polygons, plotmath, alpha blending, angled
+-   No support for: filled polygons, plotmath, alpha blending, angled
     text, rasters
-  - You should probably always add `theme(legend.position = 'none')`
+-   You should probably always add `theme(legend.position = 'none')`
     because legends look awful in ascii.
 
 ### `ggplot2`: Basic scatterplot
 
 ``` r
+library(ggplot2)
+library(devout)
+
 p <- ggplot(mtcars) + 
   geom_point(aes(mpg, wt)) +
   labs(
@@ -195,33 +198,31 @@ p
 invisible(dev.off())
 ```
 
-``` 
-    Basic scatter plot                                                                              
-    Rendered with devout::ascii()                                                                   
-    +----------------------------------------------------------------------------------------------+
-    |  .#       .       #.        .        .         .        .        .        .        .         |
-    O..............................................................................................|
-  5 |  .        .        .        .        .         .        .        .        .        .         |
-    |  .        .        .        .        .         .        .        .        .        .         |
-    |..............................................................................................|
-    |  .        .        .        .        .         .        .        .        .        .         |
-C 4 O.........................#....................................................................|
-a   |  .        .  #     .#       #      # .         .        .        .        .        .         |
-r   |..................#.#.#.......................................................................|
-    |  .        .        .#       .##  # # .         .        .        .        .        .         |
-W   |  .        .        .  #     .        .     #   .#     # .        .        .        .         |
-e 3 O..........................................#...................................................|
-i   |  .        .        .        .       #.   # #   .        .        .        .        .         |
-g   |............................................#.................................................|
-h   |  .        .        .        .        .         .#       .        .        .        #         |
-t   O.............................................................#................................|
-  2 |  .        .        .        .        .         .        .       #.        .        .     #   |
-    |  .        .        .        .        .         .        .        .        . #      .         |
-    |.............................................................................#................|
-    +10O----------------15----------------20----------------25O----------------30----------------35O
-                                                 mpg                                                
-                                                                                                     
-```
+        Basic scatter plot                                                                              
+        Rendered with devout::ascii()                                                                   
+        +----------------------------------------------------------------------------------------------+
+        |  .#       .       #.        .        .         .        .        .        .        .         |
+        O..............................................................................................|
+      5 |  .        .        .        .        .         .        .        .        .        .         |
+        |  .        .        .        .        .         .        .        .        .        .         |
+        |..............................................................................................|
+        |  .        .        .        .        .         .        .        .        .        .         |
+    C 4 O.........................#....................................................................|
+    a   |  .        .  #     .#       #      # .         .        .        .        .        .         |
+    r   |..................#.#.#.......................................................................|
+        |  .        .        .#       .##  # # .         .        .        .        .        .         |
+    W   |  .        .        .  #     .        .     #   .#     # .        .        .        .         |
+    e 3 O..........................................#...................................................|
+    i   |  .        .        .        .       #.   # #   .        .        .        .        .         |
+    g   |............................................#.................................................|
+    h   |  .        .        .        .        .         .#       .        .        .        #         |
+    t   O.............................................................#................................|
+      2 |  .        .        .        .        .         .        .       #.        .        .     #   |
+        |  .        .        .        .        .         .        .        .        . #      .         |
+        |.............................................................................#................|
+        +10O----------------15----------------20----------------25O----------------30----------------35O
+                                                     mpg                                                
+                                                                                                         
 
 ### `pie` plot in base R
 
@@ -231,47 +232,44 @@ pie(c(cool = 4, but = 2, use = 1, less = 8))
 invisible(dev.off())
 ```
 
-``` 
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                   but     ##############                                           
-                                       ####    #         ####  cool                                 
-                                    ###        #             ###                                    
-                                  ##            #               ##                                  
-                          use    ## ###         #                ##                                 
-                               ##      ###      #                  #                                
-                               #          ###    #                  #                               
-                               #########     ### #                  #                               
-                              #         ##############################                              
-                              #                                     #                               
-                               #                                    #                               
-                               ##                                  ##                               
-                                ##                                ##                                
-                                 ##                              ##                                 
-                                  ###                          ###                                  
-                                    ####                    ####                                    
-                                       #####            #####                                       
-                                            #############                                           
-                                          less                                                      
-                                                                                                    
-                                                                                                    
-                                                                                                     
-```
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                       but     ##############                                           
+                                           ####    #         ####  cool                                 
+                                        ###        #             ###                                    
+                                      ##            #               ##                                  
+                              use    ## ###         #                ##                                 
+                                   ##      ###      #                  #                                
+                                   #          ###    #                  #                               
+                                   #########     ### #                  #                               
+                                  #         ##############################                              
+                                  #                                     #                               
+                                   #                                    #                               
+                                   ##                                  ##                               
+                                    ##                                ##                                
+                                     ##                              ##                                 
+                                      ###                          ###                                  
+                                        ####                    ####                                    
+                                           #####            #####                                       
+                                                #############                                           
+                                              less                                                      
+                                                                                                        
+                                                                                                        
+                                                                                                         
 
 ### `geom_sf()` map of the Gulf of Mexico
 
 <details closed>
+<summary>
+<span title='Simple features example'> geom\_sf() example (click to
+open)
+</summary>
 
-<summary> <span title='Simple features example'> geom\_sf() example
-(click to open) </summary>
-
-  - Example taken from the [r-spatial
+-   Example taken from the [r-spatial
     website](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
-  - This would probably look better with filled polygons, but they are
+-   This would probably look better with filled polygons, but they are
     not supported yet.
-
-<!-- end list -->
 
 ``` r
 library(ggplot2)
@@ -301,17 +299,17 @@ invisible(dev.off())
 
 ## Ideas for other Output Devices
 
-  - Colour ASCII/ANSI output
-  - Audio output
-  - HPGL plotting output
-  - [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine
+-   Colour ASCII/ANSI output
+-   Audio output
+-   HPGL plotting output
+-   [CNC](https://en.wikipedia.org/wiki/Numerical_control) machine
     tooling instructions
-  - Directly drive motors to power an etch-a-sketch
+-   Directly drive motors to power an etch-a-sketch
 
 ## News:
 
-  - v0.2.0 - Major refactor. `devout` is now a way of writing graphics
+-   v0.2.0 - Major refactor. `devout` is now a way of writing graphics
     devices in plain R with the `ascii()` device as an example.
-  - v0.1.2 - Added support for multiple page output
-  - v0.1.1 - Added support for path objects, so more map plots now work.
-  - v0.1.0 - initial release
+-   v0.1.2 - Added support for multiple page output
+-   v0.1.1 - Added support for path objects, so more map plots now work.
+-   v0.1.0 - initial release

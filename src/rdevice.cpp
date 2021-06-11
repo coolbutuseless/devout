@@ -1440,6 +1440,33 @@ void rdevice_textUTF8(double x, double y, const char *str, double rot,
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Reference:
+// https://developer.r-project.org/Blog/public/2020/07/15/new-features-in-the-r-graphics-engine/index.html
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#if R_GE_definitions > 12
+static SEXP rdevice_setPattern(SEXP pattern, pDevDesc dd) {
+  return R_NilValue;
+}
+
+static void rdevice_releasePattern(SEXP ref, pDevDesc dd) {}
+
+static SEXP rdevice_setClipPath(SEXP path, SEXP ref, pDevDesc dd) {
+  return R_NilValue;
+}
+
+static void rdevice_releaseClipPath(SEXP ref, pDevDesc dd) {}
+
+static SEXP rdevice_setMask(SEXP path, SEXP ref, pDevDesc dd) {
+  return R_NilValue;
+}
+
+static void rdevice_releaseMask(SEXP ref, pDevDesc dd) {}
+#endif //R_GE_definitions
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Create and initialise the device description
 //
 // - Create a DevDesc (Device Description structure)
@@ -1600,9 +1627,57 @@ pDevDesc rdevice_open(SEXP rdata) {
   dd->canGenIdle      = FALSE; // [lgl] can the device generate idle events
   dd->gettingEvent    = FALSE; // [lgl] This is set while getGraphicsEvent is actively looking for events
 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // New features added in R4.1.0
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  dd->setPattern      = rdevice_setPattern;
+  dd->releasePattern  = rdevice_releasePattern;
+  dd->setClipPath     = rdevice_setClipPath;
+  dd->releaseClipPath = rdevice_releaseClipPath;
+  dd->setMask         = rdevice_setMask;
+  dd->releaseMask     = rdevice_releaseMask;
 
+#if R_GE_definitions > 12
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //  From src/include/R_ext
+  // * Version 11: For R 3.3.0.
+  // *             Official support for saving/restoring display lists
+  // *             across R sessions (via recordPlot() and replayPlot())
+  // *             - added grid DL to snapshots (used to be NULL)
+  // *             - added this version number to snapshots (as attribute)
+  // *             - added R version number to snapshots (as attribute)
+  // *             - added pkgName to graphics system state info (as attribute)
+  // * Version 12: For R 3.4.0
+  // *             Added canGenIdle, doIdle() and doesIdle() to devices.
+  // * Version 13: For R 4.1.0
+  // *             Added graphical definitions
+  // *             - linear gradients
+  // *             - radial gradients
+  // *             - patterns
+  // *             - clipping paths
+  // *             - masks
+  // *             Added deviceVersion
+  // * Version 14: Added deviceClip
+  //
+  //
+  // /* This should match R_GE_version,
+  //  * BUT it does not have to.
+  //  * It give the graphics engine a chance to work with
+  //  * graphics device packages BEFORE they update to
+  //  * changes in R_GE_version.
+  //  */
+  // int deviceVersion;
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  dd->deviceVersion = R_GE_definitions;
 
-
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // /* This can be used to OVERRIDE canClip so that graphics engine
+  //  * leaves ALL clipping to the graphics device
+  //  */
+  // Rboolean deviceClip;
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  dd->deviceClip = FALSE;
+#endif // R_GE_definitions
 
   //--------------------------------------------------------------------------
   // Create device-specific data structure to store state info

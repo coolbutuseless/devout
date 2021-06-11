@@ -551,7 +551,6 @@ ascii_callback <- function(device_call, args, state) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Anything we're not handling, just return() straight away
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # print(state$name)
   state <- switch(
     device_call,
     "open"         = ascii_open      (args, state),
