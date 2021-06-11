@@ -1627,6 +1627,7 @@ pDevDesc rdevice_open(SEXP rdata) {
   dd->canGenIdle      = FALSE; // [lgl] can the device generate idle events
   dd->gettingEvent    = FALSE; // [lgl] This is set while getGraphicsEvent is actively looking for events
 
+#if R_GE_definitions > 12
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // New features added in R4.1.0
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1637,7 +1638,6 @@ pDevDesc rdevice_open(SEXP rdata) {
   dd->setMask         = rdevice_setMask;
   dd->releaseMask     = rdevice_releaseMask;
 
-#if R_GE_definitions > 12
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //  From src/include/R_ext
   // * Version 11: For R 3.3.0.
