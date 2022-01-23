@@ -79,13 +79,13 @@ path:
 polygon:
   desc: draw a polygon
   args:
-    n: number of points in polygon [int]
+    'n': number of points in polygon [int]
     x: coords [vec dbl]
     'y': coords [vec dbl]
 polyline:
   desc: draw a polyline
   args:
-    n: number of points in polyline [int]
+    'n': number of points in polyline [int]
     x: coords [vec dbl]
     'y': coords [vec dbl]
 raster:

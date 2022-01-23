@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // rdevice_
 bool rdevice_(SEXP rdata, std::string device_name);
 RcppExport SEXP _devout_rdevice_(SEXP rdataSEXP, SEXP device_nameSEXP) {
